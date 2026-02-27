@@ -1,5 +1,5 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Polly;
 
 namespace Ordering.API.Extensions;
@@ -19,7 +19,7 @@ public static class DbExtension
             {
                 logger.LogInformation($"Started Db Migration: {typeof(TContext).Name}");
                 //retry strategy
-                var retry = Policy.Handle<SqlException>()
+                var retry = Policy.Handle<MySqlException>()
                     .WaitAndRetry(
                         retryCount: 5,
                         sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
@@ -30,7 +30,7 @@ public static class DbExtension
                 retry.Execute(() => CallSeeder(seeder, context, services));
                 logger.LogInformation($"Migration Completed: {typeof(TContext).Name}");
             }
-            catch (SqlException e)
+            catch (MySqlException e)
             {
                 logger.LogError(e, $"An error occurred while migrating db: {typeof(TContext).Name}");
             }

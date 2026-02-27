@@ -2,7 +2,7 @@ using Dapper;
 using Discount.Core.Entities;
 using Discount.Core.Repositories;
 using Microsoft.Extensions.Configuration;
-using Npgsql;
+using MySqlConnector;
 
 namespace Discount.Infrastructure.Repositories;
 
@@ -16,7 +16,7 @@ public class DiscountRepository : IDiscountRepository
     }
     public async Task<Coupon> GetDiscount(string productName)
     {
-        await using var connection = new NpgsqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
+        await using var connection = new MySqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
         var coupon = await connection.QueryFirstOrDefaultAsync<Coupon>
             ("SELECT * FROM Coupon WHERE ProductName = @ProductName", new { ProductName = productName });
         if (coupon == null)
@@ -26,7 +26,7 @@ public class DiscountRepository : IDiscountRepository
 
     public async Task<bool> CreateDiscount(Coupon coupon)
     {
-        await using var connection = new NpgsqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
+        await using var connection = new MySqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
 
         var affected =
             await connection.ExecuteAsync
@@ -41,7 +41,7 @@ public class DiscountRepository : IDiscountRepository
 
     public async Task<bool> UpdateDiscount(Coupon coupon)
     {
-        await using var connection = new NpgsqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
+        await using var connection = new MySqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
 
         var affected = await connection.ExecuteAsync
         ("UPDATE Coupon SET ProductName=@ProductName, Description = @Description, Amount = @Amount WHERE Id = @Id",
@@ -55,7 +55,7 @@ public class DiscountRepository : IDiscountRepository
 
     public async Task<bool> DeleteDiscount(string productName)
     {
-        await using var connection = new NpgsqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
+        await using var connection = new MySqlConnection(_configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
 
         var affected = await connection.ExecuteAsync("DELETE FROM Coupon WHERE ProductName = @ProductName",
             new { ProductName = productName });

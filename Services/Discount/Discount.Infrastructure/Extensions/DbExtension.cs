@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Npgsql;
+using MySqlConnector;
 
 namespace Discount.Infrastructure.Extensions;
 
@@ -33,15 +33,15 @@ public static class DbExtension
 
     private static void ApplyMigrations(IConfiguration config)
     {
-        using var connection = new NpgsqlConnection(config.GetValue<string>("DatabaseSettings:ConnectionString"));
+        using var connection = new MySqlConnection(config.GetValue<string>("DatabaseSettings:ConnectionString"));
         connection.Open();
-        using var cmd = new NpgsqlCommand()
+        using var cmd = new MySqlCommand()
         {
             Connection = connection
         };
         cmd.CommandText = "DROP TABLE IF EXISTS Coupon";
         cmd.ExecuteNonQuery();
-        cmd.CommandText = @"CREATE TABLE Coupon(Id SERIAL PRIMARY KEY, 
+        cmd.CommandText = @"CREATE TABLE Coupon(Id INT AUTO_INCREMENT PRIMARY KEY,
                                                 ProductName VARCHAR(500) NOT NULL,
                                                 Description TEXT,
                                                 Amount INT)";

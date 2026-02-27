@@ -12,8 +12,10 @@ public static class InfraServices
     public static IServiceCollection AddInfraServices(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
-        serviceCollection.AddDbContext<OrderContext>(options => options.UseSqlServer(
-            configuration.GetConnectionString("OrderingConnectionString")));
+        var connectionString = configuration.GetConnectionString("OrderingConnectionString");
+        serviceCollection.AddDbContext<OrderContext>(options => options.UseMySql(
+            connectionString,
+            ServerVersion.AutoDetect(connectionString)));
         serviceCollection.AddScoped(typeof(IAsyncRepository<>), typeof(RepositoryBase<>));
         serviceCollection.AddScoped<IOrderRepository, OrderRepository>();
         return serviceCollection;
