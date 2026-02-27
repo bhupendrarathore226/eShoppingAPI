@@ -1,11 +1,9 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Catalog.Core.Entities;
 
 public class BaseEntity
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; }
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 }

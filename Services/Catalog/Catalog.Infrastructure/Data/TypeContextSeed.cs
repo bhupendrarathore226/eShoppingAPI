@@ -1,25 +1,23 @@
 using System.Text.Json;
 using Catalog.Core.Entities;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Infrastructure.Data;
 
 public class TypeContextSeed
 {
-    public static void SeedData(IMongoCollection<ProductType> typeCollection)
+    public static async Task SeedDataAsync(CatalogContext context)
     {
-        bool checkTypes = typeCollection.Find(b => true).Any();
-        string path = Path.Combine("Data", "SeedData", "types.json");
-        if (!checkTypes)
+        if (!await context.Types.AnyAsync())
         {
-            var typesData = File.ReadAllText(path);
-            var types = JsonSerializer.Deserialize<List<ProductType>>(typesData);
+            string path = Path.Combine("Data", "SeedData", "types.json");
+            var typesData = await File.ReadAllTextAsync(path);
+            var types = JsonSerializer.Deserialize<List<ProductType>>(typesData,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (types != null)
             {
-                foreach (var item in types)
-                {
-                    typeCollection.InsertOneAsync(item);
-                }
+                await context.Types.AddRangeAsync(types);
+                await context.SaveChangesAsync();
             }
         }
     }

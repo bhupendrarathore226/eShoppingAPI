@@ -3,20 +3,19 @@ using Basket.API.Swagger;
 using Basket.Application.GrpcService;
 using Basket.Application.Handlers;
 using Basket.Core.Repositories;
+using Basket.Infrastructure.Data;
 using Basket.Infrastructure.Repositories;
 using Common.Logging.Correlation;
 using Discount.Grpc.Protos;
 using HealthChecks.UI.Client;
 using MassTransit;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -61,11 +60,10 @@ public class Startup
             });
         });
         });
-        //Redis Settings
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = Configuration.GetValue<string>("CacheSettings:ConnectionString");
-        });
+        //MySQL Settings
+        var connectionString = Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
+        services.AddDbContext<BasketContext>(options =>
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         services.AddMediatR(typeof(CreateShoppingCartCommandHandler).GetTypeInfo().Assembly);
         services.AddScoped<IBasketRepository, BasketRepository>();
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
@@ -80,7 +78,7 @@ public class Startup
             options.OperationFilter<SwaggerDefaultValues>();
         });
         services.AddHealthChecks()
-            .AddRedis(Configuration["CacheSettings:ConnectionString"], "Redis Health", HealthStatus.Degraded);
+            .AddMySql(connectionString, "Basket MySQL Health Check", HealthStatus.Degraded);
         services.AddMassTransit(config =>
         {
             config.UsingRabbitMq((ct, cfg)=>

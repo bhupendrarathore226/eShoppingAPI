@@ -1,26 +1,52 @@
 using System.Text.Json;
 using Catalog.Core.Entities;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Infrastructure.Data;
 
 public class CatalogContextSeed
 {
-    public static void SeedData(IMongoCollection<Product> productCollection)
+    public static async Task SeedDataAsync(CatalogContext context)
     {
-        bool checkProducts = productCollection.Find(b => true).Any();
-        string path = Path.Combine("Data", "SeedData", "products.json");
-        if (!checkProducts)
+        if (!await context.Products.AnyAsync())
         {
-            var productsData = File.ReadAllText(path);
-            var products = JsonSerializer.Deserialize<List<Product>>(productsData);
-            if (products != null)
+            string path = Path.Combine("Data", "SeedData", "products.json");
+            var productsData = await File.ReadAllTextAsync(path);
+            var productModels = JsonSerializer.Deserialize<List<ProductSeedModel>>(productsData,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (productModels != null)
             {
-                foreach (var item in products)
+                var products = productModels.Select(p => new Product
                 {
-                    productCollection.InsertOneAsync(item);
-                }
+                    Id = p.Id ?? Guid.NewGuid().ToString(),
+                    Name = p.Name,
+                    Description = p.Description,
+                    Summary = p.Summary,
+                    ImageFile = p.ImageFile,
+                    Price = p.Price,
+                    BrandId = p.Brands?.Id,
+                    TypeId = p.Types?.Id
+                }).ToList();
+                await context.Products.AddRangeAsync(products);
+                await context.SaveChangesAsync();
             }
         }
+    }
+
+    private class ProductSeedModel
+    {
+        public string? Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? Summary { get; set; }
+        public string? ImageFile { get; set; }
+        public decimal Price { get; set; }
+        public RefModel? Brands { get; set; }
+        public RefModel? Types { get; set; }
+    }
+
+    private class RefModel
+    {
+        public string? Id { get; set; }
     }
 }

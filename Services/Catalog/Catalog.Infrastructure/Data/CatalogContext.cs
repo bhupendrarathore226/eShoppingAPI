@@ -1,28 +1,32 @@
 using Catalog.Core.Entities;
-using Microsoft.Extensions.Configuration;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Infrastructure.Data;
 
-public class CatalogContext : ICatalogContext
+public class CatalogContext : DbContext, ICatalogContext
 {
-    public IMongoCollection<Product> Products { get; }
-    public IMongoCollection<ProductBrand> Brands { get; }
-    public IMongoCollection<ProductType> Types { get; }
+    public CatalogContext(DbContextOptions<CatalogContext> options) : base(options) { }
 
-    public CatalogContext(IConfiguration configuration)
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductBrand> Brands { get; set; }
+    public DbSet<ProductType> Types { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var client = new MongoClient(configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
-        var database = client.GetDatabase(configuration.GetValue<string>("DatabaseSettings:DatabaseName"));
-        Brands = database.GetCollection<ProductBrand>(
-            configuration.GetValue<string>("DatabaseSettings:BrandsCollection"));
-        Types = database.GetCollection<ProductType>(
-            configuration.GetValue<string>("DatabaseSettings:TypesCollection"));
-        Products = database.GetCollection<Product>(
-            configuration.GetValue<string>("DatabaseSettings:CollectionName"));
-        
-        BrandContextSeed.SeedData(Brands);
-        TypeContextSeed.SeedData(Types);
-        CatalogContextSeed.SeedData(Products);
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Brands)
+            .WithMany()
+            .HasForeignKey(p => p.BrandId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Types)
+            .WithMany()
+            .HasForeignKey(p => p.TypeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Product>().Property(p => p.Id).HasMaxLength(100);
+        modelBuilder.Entity<ProductBrand>().Property(p => p.Id).HasMaxLength(100);
+        modelBuilder.Entity<ProductType>().Property(p => p.Id).HasMaxLength(100);
     }
 }

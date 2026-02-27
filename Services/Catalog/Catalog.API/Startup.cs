@@ -7,10 +7,8 @@ using Common.Logging;
 using Common.Logging.Correlation;
 using HealthChecks.UI.Client;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
@@ -28,23 +26,18 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddApiVersioning();
-        // services.AddCors(options =>
-        // {
-        //     options.AddPolicy("CorsPolicy", policy =>
-        //     {
-        //         policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
-        //     });
-        // });
+        var connectionString = Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
+        services.AddDbContext<CatalogContext>(options =>
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         services.AddHealthChecks()
-            .AddMongoDb(Configuration["DatabaseSettings:ConnectionString"], "Catalog  Mongo Db Health Check",
-                HealthStatus.Degraded);
+            .AddMySql(connectionString, "Catalog MySQL Health Check", HealthStatus.Degraded);
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Catalog.API", Version = "v1"}); });
         
         //DI
         services.AddAutoMapper(typeof(Startup));
         services.AddMediatR(typeof(CreateProductHandler).GetTypeInfo().Assembly);
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
-        services.AddScoped<ICatalogContext, CatalogContext>();
+        services.AddScoped<ICatalogContext>(provider => provider.GetRequiredService<CatalogContext>());
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IBrandRepository, ProductRepository>();
         services.AddScoped<ITypesRepository, ProductRepository>();
