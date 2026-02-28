@@ -1,4 +1,5 @@
 using EventBus.Messages.Common;
+using GreenPipes;
 using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -33,23 +34,28 @@ public class Startup
             c.SwaggerDoc("v1", new OpenApiInfo {Title = "Ordering.API", Version = "v1"});
         });
         services.AddHealthChecks().Services.AddDbContext<OrderContext>();
+        var eventBusSettings = Configuration.GetSection("EventBusSettings").Get<EventBusSettings>();
         services.AddMassTransit(config =>
         {
             //Mark this as consumer
             config.AddConsumer<BasketOrderingConsumer>();
             config.AddConsumer<BasketOrderingConsumerV2>();
-            config.UsingRabbitMq((ctx, cfg)=>
+            config.UsingRabbitMq((ctx, cfg) =>
             {
-                cfg.Host(Configuration["EventBusSettings:HostAddress"]);
+                cfg.Host(eventBusSettings!.HostAddress);
+                cfg.UseMessageRetry(retryConfig =>
+                {
+                    retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+                });
                 //provide the queue name with consumer settings
                 cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueue, c =>
                 {
-                    c.ConfigureConsumer<BasketOrderingConsumer>(ctx);  
+                    c.ConfigureConsumer<BasketOrderingConsumer>(ctx);
                 });
-                //V2 endpoint will pick items from here 
+                //V2 endpoint will pick items from here
                 cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueueV2, c =>
                 {
-                    c.ConfigureConsumer<BasketOrderingConsumerV2>(ctx);  
+                    c.ConfigureConsumer<BasketOrderingConsumerV2>(ctx);
                 });
             });
         });

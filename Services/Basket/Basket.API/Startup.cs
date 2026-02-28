@@ -7,6 +7,8 @@ using Basket.Infrastructure.Data;
 using Basket.Infrastructure.Repositories;
 using Common.Logging.Correlation;
 using Discount.Grpc.Protos;
+using EventBus.Messages.Common;
+using GreenPipes;
 using HealthChecks.UI.Client;
 using MassTransit;
 using MediatR;
@@ -78,11 +80,16 @@ public class Startup
         });
         services.AddHealthChecks()
             .AddMySql(connectionString, "Basket MySQL Health Check", HealthStatus.Degraded);
+        var eventBusSettings = Configuration.GetSection("EventBusSettings").Get<EventBusSettings>();
         services.AddMassTransit(config =>
         {
-            config.UsingRabbitMq((ct, cfg)=>
+            config.UsingRabbitMq((ct, cfg) =>
             {
-                cfg.Host(Configuration["EventBusSettings:HostAddress"]);
+                cfg.Host(eventBusSettings!.HostAddress);
+                cfg.UseMessageRetry(retryConfig =>
+                {
+                    retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+                });
             });
         });
         services.AddMassTransitHostedService();

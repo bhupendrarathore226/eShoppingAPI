@@ -7,8 +7,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     
-  portainer:
-    image: portainer/portainer-ce
+  # portainer:
+  #   image: portainer/portainer-ce
       
   catalog.api:
     image: ${DOCKER_REGISTRY-}catalogapi
@@ -40,11 +40,11 @@ services:
       context: .
       dockerfile: ApiGateways/Ocelot.ApiGateway/Dockerfile
       
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.9.2
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.9.2
 
   identityserver:
     image: ${DOCKER_REGISTRY-}identityserver
@@ -54,5 +54,5 @@ services:
       
 volumes:
   mysql_data:
-  portainer_data:
-  elasticsearch-data:  
+  # portainer_data:
+  # elasticsearch-data:  
