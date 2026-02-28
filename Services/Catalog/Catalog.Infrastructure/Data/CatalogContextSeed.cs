@@ -10,23 +10,25 @@ public class CatalogContextSeed
     {
         if (!await context.Products.AnyAsync())
         {
-            string path = Path.Combine("Data", "SeedData", "products.json");
+            string path = Path.Combine(AppContext.BaseDirectory, "Data", "SeedData", "products.json");
             var productsData = await File.ReadAllTextAsync(path);
             var productModels = JsonSerializer.Deserialize<List<ProductSeedModel>>(productsData,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (productModels != null)
             {
-                var products = productModels.Select(p => new Product
-                {
-                    Id = p.Id ?? Guid.NewGuid().ToString(),
-                    Name = p.Name,
-                    Description = p.Description,
-                    Summary = p.Summary,
-                    ImageFile = p.ImageFile,
-                    Price = p.Price,
-                    BrandId = p.Brands?.Id,
-                    TypeId = p.Types?.Id
-                }).ToList();
+                var products = productModels
+                            .GroupBy(p => p.Id ?? Guid.NewGuid().ToString())
+                            .Select(g => new Product
+                            {
+                                Id = g.Key,
+                                Name = g.First().Name,
+                                Description = g.First().Description ?? string.Empty,
+                                Summary = g.First().Summary ?? string.Empty,
+                                ImageFile = g.First().ImageFile ?? string.Empty,
+                                Price = g.First().Price,
+                                BrandId = g.First().Brands?.Id,
+                                TypeId = g.First().Types?.Id
+                            }).ToList(); 
                 await context.Products.AddRangeAsync(products);
                 await context.SaveChangesAsync();
             }

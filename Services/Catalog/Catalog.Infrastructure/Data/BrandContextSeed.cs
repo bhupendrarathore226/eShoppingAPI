@@ -11,9 +11,9 @@ public static class BrandContextSeed
         if (!await context.Brands.AnyAsync())
         {
          
-            //E:\AI Project\eShoppingAPI\Services\Catalog\Catalog.Infrastructure\Data\SeedData\brands.json
+            
             string path= Path.Combine(AppContext.BaseDirectory, "Data", "SeedData", "brands.json");
-            //string path = Path.Combine("Data", "SeedData", "brands.json");
+         
             var brandsData = await File.ReadAllTextAsync(path);
             var brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsData,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });

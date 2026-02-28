@@ -19,16 +19,19 @@
       </PackageReference>
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="Data\SeedData\brands.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\SeedData\products.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\SeedData\types.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
+	<ItemGroup>
+		<None Update="..\Catalog.Infrastructure\Data\SeedData\brands.json">
+			<Link>Data\SeedData\brands.json</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="..\Catalog.Infrastructure\Data\SeedData\products.json">
+			<Link>Data\SeedData\products.json</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="..\Catalog.Infrastructure\Data\SeedData\types.json">
+			<Link>Data\SeedData\types.json</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ public class TypeContextSeed
     {
         if (!await context.Types.AnyAsync())
         {
-            string path = Path.Combine("Data", "SeedData", "types.json");
+            string path = Path.Combine(AppContext.BaseDirectory, "Data", "SeedData", "types.json");
             var typesData = await File.ReadAllTextAsync(path);
             var types = JsonSerializer.Deserialize<List<ProductType>>(typesData,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
