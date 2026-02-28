@@ -33,12 +33,24 @@ public static class DbExtension
 
     private static void ApplyMigrations(IConfiguration config)
     {
-        using var connection = new MySqlConnection(config.GetValue<string>("DatabaseSettings:ConnectionString"));
+        var connectionString = config.GetValue<string>("DatabaseSettings:ConnectionString");
+
+        // Strip the Database= segment so we can connect before the DB exists
+        var builder = new MySqlConnectionStringBuilder(connectionString);
+        var databaseName = builder.Database;
+        builder.Database = string.Empty;
+
+        using var connection = new MySqlConnection(builder.ConnectionString);
         connection.Open();
         using var cmd = new MySqlCommand()
         {
             Connection = connection
         };
+
+        cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{databaseName}`";
+        cmd.ExecuteNonQuery();
+        cmd.CommandText = $"USE `{databaseName}`";
+        cmd.ExecuteNonQuery();
         cmd.CommandText = "DROP TABLE IF EXISTS Coupon";
         cmd.ExecuteNonQuery();
         cmd.CommandText = @"CREATE TABLE Coupon(Id INT AUTO_INCREMENT PRIMARY KEY,
