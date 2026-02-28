@@ -9,6 +9,9 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        // Required for gRPC over plain HTTP (h2c) — used when connecting to Discount.API
+        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
         var host = CreateHostBuilder(args).Build();
 
         // Auto-migrate on startup
