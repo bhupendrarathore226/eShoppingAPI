@@ -7,8 +7,8 @@ public class BasketContext : DbContext
 {
     public BasketContext(DbContextOptions<BasketContext> options) : base(options) { }
 
-    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-    public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
+    public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

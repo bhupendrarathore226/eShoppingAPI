@@ -16,9 +16,9 @@ public class BasketRepository : IBasketRepository
 
     public async Task<ShoppingCart> GetBasket(string userName)
     {
-        return await _context.ShoppingCarts
+        return (await _context.ShoppingCarts
             .Include(c => c.Items)
-            .FirstOrDefaultAsync(c => c.UserName == userName);
+            .FirstOrDefaultAsync(c => c.UserName == userName))!;
     }
 
     public async Task<ShoppingCart> UpdateBasket(ShoppingCart shoppingCart)

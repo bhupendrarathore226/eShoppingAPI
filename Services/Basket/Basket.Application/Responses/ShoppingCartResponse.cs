@@ -2,12 +2,11 @@ namespace Basket.Application.Responses;
 
 public class ShoppingCartResponse
 {
-    public string UserName { get; set; }
-    public List<ShoppingCartItemResponse> Items { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public List<ShoppingCartItemResponse> Items { get; set; } = new();
 
     public ShoppingCartResponse()
     {
-        
     }
 
     public ShoppingCartResponse(string userName)
