@@ -128,8 +128,10 @@ public class Startup
             app.UseSwagger();
 
             // UseSwaggerForOcelotUI MUST come before UseOcelot.
-            // It intercepts /swagger/docs/{key} and serves the transformed,
-            // path-mapped swagger JSON for each downstream microservice.
+            // MMLib 4.x GetEndPointInfo parses only one segment after the base path,
+            // so PathToSwaggerGenerator must stay at /swagger/docs and Version must
+            // be omitted from SwaggerEndPoints — that keeps the URL as
+            // /swagger/docs/{key} with no extra version segment.
             app.UseSwaggerForOcelotUI(opt =>
             {
                 opt.PathToSwaggerGenerator = "/swagger/docs";
