@@ -3,6 +3,7 @@
 
     // ── Catalog API ──────────────────────────────────────────────────────────
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
       "DownstreamPathTemplate": "/api/v1/Catalog",
@@ -16,6 +17,7 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/GetProductById/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetProductById/{id}",
@@ -28,6 +30,7 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/GetAllProducts",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllProducts",
@@ -41,6 +44,7 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/GetAllBrands",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllBrands",
@@ -54,6 +58,7 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/GetAllTypes",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllTypes",
@@ -67,6 +72,7 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/GetProductsByBrandName/{brand}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetProductsByBrandName/{brand}",
@@ -79,9 +85,10 @@
       }
     },
     {
+      "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog/DeleteProduct/{id}",
       "UpstreamHttpMethod": [ "DELETE" ],
-      "DownstreamPathTemplate": "/api/v1/Catalog/GetProductById/{id}",
+      "DownstreamPathTemplate": "/api/v1/Catalog/DeleteProduct/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
       "QoSOptions": {
@@ -93,6 +100,7 @@
 
     // ── Basket API ───────────────────────────────────────────────────────────
     {
+      "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/GetBasket/{userName}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Basket/GetBasket/{userName}",
@@ -105,6 +113,7 @@
       }
     },
     {
+      "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/DeleteBasket/{userName}",
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/api/v1/Basket/DeleteBasket/{userName}",
@@ -117,6 +126,7 @@
       }
     },
     {
+      "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/CreateBasket",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v1/Basket/CreateBasket",
@@ -129,6 +139,7 @@
       }
     },
     {
+      "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/Checkout",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v1/Basket/Checkout",
@@ -148,6 +159,7 @@
       }
     },
     {
+      "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/CheckoutV2",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v2/Basket/Checkout",
@@ -169,9 +181,49 @@
 
     // ── Ordering API ─────────────────────────────────────────────────────────
     {
+      "SwaggerKey": "ordering",
       "UpstreamPathTemplate": "/Order/{userName}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Order/{userName}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51346 } ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "SwaggerKey": "ordering",
+      "UpstreamPathTemplate": "/Order",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/api/v1/Order",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51346 } ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "SwaggerKey": "ordering",
+      "UpstreamPathTemplate": "/Order",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "DownstreamPathTemplate": "/api/v1/Order",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51346 } ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "SwaggerKey": "ordering",
+      "UpstreamPathTemplate": "/Order/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "DownstreamPathTemplate": "/api/v1/Order/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51346 } ],
       "QoSOptions": {

@@ -115,10 +115,16 @@ public class Startup
     {
         if (env.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();  
-            app.UseSwagger();
-            app.UseSwaggerUI(options => {
+            app.UseDeveloperExceptionPage();
+        }
 
+        // app.UseSwagger() is intentionally placed outside IsDevelopment().
+        // The Ocelot API Gateway uses MMLib.SwaggerForOcelot to fetch
+        // /swagger/v1/swagger.json from this service regardless of environment.
+        app.UseSwagger();
+        if (env.IsDevelopment())
+        {
+            app.UseSwaggerUI(options => {
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
                     options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
