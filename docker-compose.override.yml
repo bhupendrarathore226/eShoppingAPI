@@ -9,12 +9,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  rabbitmq:
-    container_name: rabbitmq
-    restart: always
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  # rabbitmq:
+  #   container_name: rabbitmq
+  #   restart: always
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
         
   # portainer:
   #   container_name: portainer
@@ -44,11 +44,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - "DatabaseSettings__ConnectionString=Server=mysqldb;Port=3306;Database=BasketDb;User=root;Password=4513;"
       - "GrpcSettings__DiscountUrl=http://discount.api"
-      - "EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "EventBusSettings__HostAddress=amqp://guest:guest@localhost:5672"
       - "ElasticConfiguration__Uri=http://elasticsearch:9200"
     depends_on:
       - mysqldb
-      - rabbitmq
     ports:
       - "9001:80"
     
@@ -70,11 +69,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "ConnectionStrings__OrderingConnectionString=Server=mysqldb;Port=3306;Database=OrderDb;User=root;Password=4513;"
-      - "EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "EventBusSettings__HostAddress=amqp://guest:guest@localhost:5672"
       - "ElasticConfiguration__Uri=http://elasticsearch:9200"
     depends_on:
       - mysqldb
-      - rabbitmq
     ports:
       - "9003:80"
     
