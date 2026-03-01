@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Ocelot.Cache.CacheManager;
@@ -15,32 +16,48 @@ namespace Ocelot.ApiGateway;
 
 public class Startup
 {
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _env;
+
+    public Startup(IConfiguration configuration, IWebHostEnvironment env)
+    {
+        _configuration = configuration;
+        _env = env;
+    }
+
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
+
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy",
                 policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
         });
-        //var authScheme = "EShoppingGatewayAuthScheme";
-       // services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            // .AddJwtBearer(authScheme, options =>
-            // {
-            //     options.Authority = "https://localhost:9009";
-            //     options.Audience = "EShoppingGateway";
-            // });
-        //     .AddJwtBearer(options =>
-        //     {
-        //         options.Authority = "https://localhost:9009";
-        //         options.Audience = "EShoppingGateway";
-        //     });
-        services.AddOcelot()
-            .AddKubernetes()
+
+        const string authScheme = "EShoppingGatewayAuthScheme";
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(authScheme, options =>
+            {
+                options.Authority = _configuration["IdentityServer:Authority"];
+                options.Audience = "EShoppingGateway";
+                // Accept HTTP (non-HTTPS) Identity Server in development
+                options.RequireHttpsMetadata = !_env.IsDevelopment();
+            });
+
+        var ocelotBuilder = services.AddOcelot()
             .AddCacheManager(o => o.WithDictionaryHandle());
+
+        // Only load the Kubernetes service-discovery provider in Production.
+        // In Development/Local the provider is not available and causes startup errors.
+        if (_env.IsProduction())
+        {
+            ocelotBuilder.AddKubernetes();
+        }
     }
 
-    public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    // NOTE: Must be Task, not void, so that async exceptions are not swallowed.
+    public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -50,9 +67,11 @@ public class Startup
         app.AddCorrelationIdMiddleware();
         app.UseRouting();
         app.UseCors("CorsPolicy");
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello Ocelot"); });
+            endpoints.MapGet("/", async context => { await context.Response.WriteAsync("EShopping API Gateway"); });
         });
         await app.UseOcelot();
     }

@@ -7,7 +7,7 @@
       "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
       "DownstreamPathTemplate": "/api/v1/Catalog",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "FileCacheOptions": { "TtlSeconds": 30 },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -20,7 +20,7 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetProductById/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -32,7 +32,7 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllProducts",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "FileCacheOptions": { "TtlSeconds": 30 },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -45,7 +45,7 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllBrands",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "FileCacheOptions": { "TtlSeconds": 60 },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -58,7 +58,7 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetAllTypes",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "FileCacheOptions": { "TtlSeconds": 60 },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -71,7 +71,7 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetProductsByBrandName/{brand}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -83,7 +83,10 @@
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/api/v1/Catalog/GetProductById/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51335 } ],
+      "DownstreamHostAndPorts": [ { "Host": "catalog-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -97,7 +100,10 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Basket/GetBasket/{userName}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51339 } ],
+      "DownstreamHostAndPorts": [ { "Host": "basket-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -109,7 +115,10 @@
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/api/v1/Basket/DeleteBasket/{userName}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51339 } ],
+      "DownstreamHostAndPorts": [ { "Host": "basket-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -121,7 +130,10 @@
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v1/Basket/CreateBasket",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51339 } ],
+      "DownstreamHostAndPorts": [ { "Host": "basket-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -133,7 +145,10 @@
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v1/Basket/Checkout",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51339 } ],
+      "DownstreamHostAndPorts": [ { "Host": "basket-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -152,7 +167,10 @@
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/v2/Basket/Checkout",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51339 } ],
+      "DownstreamHostAndPorts": [ { "Host": "basket-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -173,7 +191,10 @@
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/v1/Order/{userName}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 51346 } ],
+      "DownstreamHostAndPorts": [ { "Host": "ordering-api", "Port": 80 } ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "EShoppingGatewayAuthScheme"
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,
@@ -186,7 +207,7 @@
   ],
 
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:51342",
+    "BaseUrl": "https://api.eshopping.com",
     "RateLimitOptions": {
       "DisableRateLimitHeaders": false,
       "QuotaExceededMessage": "Too many requests. Please try again later.",
