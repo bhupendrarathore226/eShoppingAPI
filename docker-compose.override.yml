@@ -48,6 +48,7 @@ services:
       - "ElasticConfiguration__Uri=http://elasticsearch:9200"
     depends_on:
       - mysqldb
+      - discount.api
     ports:
       - "9001:80"
     
