@@ -55,10 +55,10 @@ public class ProductRepository : IProductRepository, IBrandRepository, ITypesRep
 
     public async Task<Product> GetProduct(string id)
     {
-        return await _context.Products
+        return (await _context.Products
             .Include(p => p.Brands)
             .Include(p => p.Types)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id))!;
     }
 
     public async Task<IEnumerable<Product>> GetProductByName(string name)

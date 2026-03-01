@@ -13,7 +13,7 @@ public class Program
             .Build()
             .MigrateDatabase<OrderContext>((context, services) =>
             {
-                var logger = services.GetService<ILogger<OrderContextSeed>>();
+                var logger = services.GetRequiredService<ILogger<OrderContextSeed>>();
                 OrderContextSeed.SeedAsync(context, logger).Wait();
             }).Run();
     }

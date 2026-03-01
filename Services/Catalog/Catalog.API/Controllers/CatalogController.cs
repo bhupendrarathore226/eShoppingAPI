@@ -59,7 +59,7 @@ public class CatalogController : ApiController
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An Exception has occured: {Exception}");
+            _logger.LogError(e, "An Exception has occurred");
             throw;
         }
     }

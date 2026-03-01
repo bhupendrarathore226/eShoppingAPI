@@ -7,9 +7,9 @@ public class CatalogContext : DbContext, ICatalogContext
 {
     public CatalogContext(DbContextOptions<CatalogContext> options) : base(options) { }
 
-    public DbSet<Product> Products { get; set; }
-    public DbSet<ProductBrand> Brands { get; set; }
-    public DbSet<ProductType> Types { get; set; }
+    public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<ProductBrand> Brands { get; set; } = null!;
+    public DbSet<ProductType> Types { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
