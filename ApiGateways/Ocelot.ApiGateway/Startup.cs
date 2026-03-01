@@ -56,8 +56,8 @@ public class Startup
         }
     }
 
-    // NOTE: Must be Task, not void, so that async exceptions are not swallowed.
-    public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    // NOTE: Host expects a synchronous Configure method; block on Ocelot's async initialization.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -73,6 +73,6 @@ public class Startup
         {
             endpoints.MapGet("/", async context => { await context.Response.WriteAsync("EShopping API Gateway"); });
         });
-        await app.UseOcelot();
+        app.UseOcelot().GetAwaiter().GetResult();
     }
 }
