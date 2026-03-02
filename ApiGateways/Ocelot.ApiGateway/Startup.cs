@@ -32,6 +32,10 @@ public class Startup
     {
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
 
+        // MVC infrastructure is required so Swashbuckle can generate documents
+        // (it provides IApiDescriptionGroupCollectionProvider, etc.).
+        services.AddControllers();
+
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy",
@@ -74,6 +78,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapControllers();
             endpoints.MapGet("/", async context => { await context.Response.WriteAsync("EShopping API Gateway"); });
         });
 
