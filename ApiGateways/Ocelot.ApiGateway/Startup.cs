@@ -63,7 +63,7 @@ public class Startup
         services.AddSwaggerForOcelot(_configuration);
     }
 
-    public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -97,6 +97,6 @@ public class Startup
             });
         }
 
-        await app.UseOcelot();
+        app.UseOcelot().Wait();
     }
 }
