@@ -14,6 +14,8 @@ using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Kubernetes;
+using Ocelot.Provider;
+using Ocelot.Provider.Polly;
 
 namespace Ocelot.ApiGateway;
 
@@ -53,6 +55,7 @@ public class Startup
             });
 
         var ocelotBuilder = services.AddOcelot()
+            .AddPolly()
             .AddCacheManager(o => o.WithDictionaryHandle());
 
         if (_env.IsProduction())
@@ -60,7 +63,11 @@ public class Startup
             ocelotBuilder.AddKubernetes();
         }
 
-        services.AddSwaggerForOcelot(_configuration);
+        services.AddSwaggerForOcelot(_configuration, opts =>
+        {
+            // Do not expose a gateway-level swagger doc; downstream docs are sufficient.
+            opts.GenerateDocsForGatewayItSelf = false;
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -93,6 +100,8 @@ public class Startup
             {
                 opt.RoutePrefix = routePrefix;
                 opt.DocumentTitle = documentTitle;
+                // MMLib.SwaggerForOcelot serves individual service JSON docs at
+                // {PathToSwaggerGenerator}/{version}/{key}  e.g. /swagger/docs/v1/catalog
                 opt.PathToSwaggerGenerator = "/swagger/docs";
             });
         }

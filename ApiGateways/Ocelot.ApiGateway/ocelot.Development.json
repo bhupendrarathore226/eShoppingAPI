@@ -1,7 +1,5 @@
 {
   "Routes": [
-
-    // ── Catalog API ──────────────────────────────────────────────────────────
     {
       "SwaggerKey": "catalog",
       "UpstreamPathTemplate": "/Catalog",
@@ -97,8 +95,6 @@
         "TimeoutValue": 5000
       }
     },
-
-    // ── Basket API ───────────────────────────────────────────────────────────
     {
       "SwaggerKey": "basket",
       "UpstreamPathTemplate": "/Basket/GetBasket/{userName}",
@@ -178,8 +174,6 @@
         "TimeoutValue": 10000
       }
     },
-
-    // ── Ordering API ─────────────────────────────────────────────────────────
     {
       "SwaggerKey": "ordering",
       "UpstreamPathTemplate": "/Order/{userName}",
@@ -232,9 +226,6 @@
         "TimeoutValue": 5000
       }
     }
-
-    // NOTE: Discount.API is a gRPC-only internal service (consumed by Basket.API).
-    // It has no REST endpoints and must NOT be exposed through the gateway.
   ],
 
   "GlobalConfiguration": {
