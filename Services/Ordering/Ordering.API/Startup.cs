@@ -1,3 +1,4 @@
+using Common.Logging.Apim;
 using EventBus.Messages.Common;
 using GreenPipes;
 using HealthChecks.UI.Client;
@@ -24,6 +25,7 @@ public class Startup
     {
         services.AddControllers();
         services.AddApiVersioning();
+        services.AddApimIntegration(Configuration);
         services.AddApplicationServices();
         services.AddInfraServices(Configuration);
         services.AddAutoMapper(typeof(Startup));
@@ -79,6 +81,7 @@ public class Startup
         }
 
         app.UseRouting();
+        app.UseApimIntegration();   // ForwardedHeaders + subnet guard + correlationId + APIM identity
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>
         {

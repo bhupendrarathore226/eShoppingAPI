@@ -1,0 +1,67 @@
+<!--
+  GLOBAL POLICY — applied before every API in this APIM instance.
+  Purpose:
+    - Enforce HTTPS
+    - Inject / propagate X-Correlation-ID (W3C trace-compatible)
+    - Strip server-identifying response headers
+    - Standardise error shape on unhandled faults
+-->
+<policies>
+  <inbound>
+    <!-- ① Block plain-HTTP traffic — APIM should only be called over HTTPS -->
+    <choose>
+      <when condition="@(context.Request.OriginalUrl.Scheme.ToLower() != "https")">
+        <return-response>
+          <set-status code="403" reason="HTTPS required" />
+          <set-header name="Content-Type" exists-action="override">
+            <value>application/problem+json</value>
+          </set-header>
+          <set-body>{"type":"https://eshopping.com/errors/https-required","title":"HTTPS Required","status":403}</set-body>
+        </return-response>
+      </when>
+    </choose>
+
+    <!-- ② Correlation ID: honour an incoming id or mint a fresh one -->
+    <set-variable name="correlationId"
+                  value="@(context.Request.Headers.GetValueOrDefault("X-Correlation-ID",
+                             Guid.NewGuid().ToString()))" />
+    <set-header name="X-Correlation-ID" exists-action="override">
+      <value>@((string)context.Variables["correlationId"])</value>
+    </set-header>
+
+    <base />
+  </inbound>
+
+  <backend>
+    <base />
+  </backend>
+
+  <outbound>
+    <!-- Echo the correlation id back to the caller -->
+    <set-header name="X-Correlation-ID" exists-action="override">
+      <value>@((string)context.Variables["correlationId"])</value>
+    </set-header>
+    <!-- Remove headers that leak infrastructure details -->
+    <set-header name="Server" exists-action="delete" />
+    <set-header name="X-Powered-By" exists-action="delete" />
+    <set-header name="X-AspNet-Version" exists-action="delete" />
+    <base />
+  </outbound>
+
+  <on-error>
+    <base />
+    <!-- Global fallback error response -->
+    <set-header name="Content-Type" exists-action="override">
+      <value>application/problem+json</value>
+    </set-header>
+    <set-body>@{
+      return new JObject(
+        new JProperty("type",          "https://eshopping.com/errors/gateway-error"),
+        new JProperty("title",         context.LastError.Message),
+        new JProperty("status",        context.Response.StatusCode),
+        new JProperty("correlationId", (string)context.Variables["correlationId"]),
+        new JProperty("source",        context.LastError.Source)
+      ).ToString();
+    }</set-body>
+  </on-error>
+</policies>

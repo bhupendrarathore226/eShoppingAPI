@@ -4,6 +4,7 @@ using Catalog.Core.Repositories;
 using Catalog.Infrastructure.Data;
 using Catalog.Infrastructure.Repositories;
 using Common.Logging;
+using Common.Logging.Apim;
 using Common.Logging.Correlation;
 using HealthChecks.UI.Client;
 using MediatR;
@@ -37,6 +38,7 @@ public class Startup
         services.AddAutoMapper(typeof(Startup));
         services.AddMediatR(typeof(CreateProductHandler).GetTypeInfo().Assembly);
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
+        services.AddApimIntegration(Configuration);
         services.AddScoped<ICatalogContext>(provider => provider.GetRequiredService<CatalogContext>());
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IBrandRepository, ProductRepository>();
@@ -86,6 +88,7 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseRouting();
         // app.UseCors("CorsPolicy");
+        app.UseApimIntegration();   // ForwardedHeaders + subnet guard + correlationId + APIM identity
         app.UseAuthentication();
         app.UseStaticFiles();
         app.UseAuthorization();

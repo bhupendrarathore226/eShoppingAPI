@@ -4,6 +4,7 @@ using Catalog.Application.Queries;
 using Catalog.Application.Responses;
 using Catalog.Core.Specs;
 using Common.Logging;
+using Common.Logging.Apim;
 using Common.Logging.Correlation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,18 @@ public class CatalogController : ApiController
     private readonly IMediator _mediator;
     private readonly ILogger<CatalogController> _logger;
     private readonly ICorrelationIdGenerator _correlationIdGenerator;
+    private readonly IApimRequestContext _apimContext;
 
-    public CatalogController(IMediator mediator, ILogger<CatalogController> logger, ICorrelationIdGenerator correlationIdGenerator)
+    public CatalogController(
+        IMediator mediator,
+        ILogger<CatalogController> logger,
+        ICorrelationIdGenerator correlationIdGenerator,
+        IApimRequestContext apimContext)
     {
         _mediator = mediator;
         _logger = logger;
         _correlationIdGenerator = correlationIdGenerator;
+        _apimContext = apimContext;
         _logger.LogInformation("CorrelationId {correlationId}:", _correlationIdGenerator.Get());
     }
 
@@ -114,8 +121,19 @@ public class CatalogController : ApiController
     [HttpDelete]
     [Route("{id}",Name="DeleteProduct")]
     [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     public async Task<IActionResult> DeleteProduct(string id)
     {
+        // APIM strips the JWT and injects X-User-Roles after validation.
+        // Enforce write access here as a defence-in-depth check.
+        if (!_apimContext.HasRole("admin", "catalog.write"))
+        {
+            _logger.LogWarning(
+                "DeleteProduct denied for UserId={UserId} CorrelationId={CorrelationId}",
+                _apimContext.UserId, _correlationIdGenerator.Get());
+            return Forbid();
+        }
+
         var query = new DeleteProductByIdQuery(id);
         var result = await _mediator.Send(query);
         return Ok(result);

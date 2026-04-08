@@ -1,0 +1,163 @@
+<!--
+  CATALOG API — API-level policy
+  External path  : /catalog/v1/...
+  Internal path  : /api/v1/Catalog/...
+
+  Rules
+  ─────
+  • GET requests are public — subscription key only, no JWT needed.
+  • POST / PUT / DELETE require a valid JWT with role admin OR catalog.write.
+  • GET responses are cached for 5 minutes (vary by pagination + filter params).
+  • Rate limit: 100 GETs per 60 s per subscription; 20 writes per 60 s.
+  • Retry up to 3 times on 5xx before surfacing an error to the client.
+-->
+<policies>
+  <!-- ═══════════════════════════════ INBOUND ══════════════════════════════ -->
+  <inbound>
+    <base />
+
+    <!-- 1. Route all catalog operations to the catalog-api backend -->
+    <set-backend-service base-url="{{catalog-backend-url}}" />
+
+    <!-- 2. Rewrite the APIM path prefix → internal /api/v1/ path.
+            APIM strips the API path prefix ("catalog") automatically;
+            what remains after stripping is forwarded verbatim unless
+            rewrite-uri is used. Because our backend uses the same path
+            segments (Catalog/GetAllProducts etc.) we only need to prepend
+            /api/v1. -->
+    <rewrite-uri template="@("/api/v1" + context.Request.Url.Path.Substring(
+                               context.Request.Url.Path.IndexOf("/Catalog")))"
+                 copy-unmatched-params="true" />
+
+    <!-- 3. JWT validation — write operations only -->
+    <choose>
+      <when condition="@(context.Request.Method != "GET")">
+        <validate-jwt header-name="Authorization"
+                      failed-validation-httpcode="401"
+                      failed-validation-error-message="Valid bearer token required"
+                      require-expiration-time="true"
+                      require-scheme="Bearer"
+                      require-signed-tokens="true"
+                      clock-skew="0:0:30">
+          <openid-config url="{{identity-server-url}}/.well-known/openid-configuration" />
+          <audiences>
+            <audience>EShoppingGateway</audience>
+          </audiences>
+          <issuers>
+            <issuer>{{identity-server-url}}</issuer>
+          </issuers>
+          <required-claims>
+            <claim name="role" match="any">
+              <value>admin</value>
+              <value>catalog.write</value>
+            </claim>
+          </required-claims>
+        </validate-jwt>
+      </when>
+    </choose>
+
+    <!-- 4. Rate limiting (per subscription key) -->
+    <choose>
+      <when condition="@(context.Request.Method == "GET")">
+        <rate-limit-by-key calls="100" renewal-period="60"
+                           counter-key="@(context.Subscription.Id + "-catalog-read")"
+                           remaining-calls-header-name="X-RateLimit-Remaining"
+                           retry-after-header-name="Retry-After" />
+      </when>
+      <otherwise>
+        <rate-limit-by-key calls="20" renewal-period="60"
+                           counter-key="@(context.Subscription.Id + "-catalog-write")"
+                           remaining-calls-header-name="X-RateLimit-Remaining"
+                           retry-after-header-name="Retry-After" />
+      </otherwise>
+    </choose>
+
+    <!-- 5. Cache lookup for GET requests -->
+    <cache-lookup vary-by-developer="false"
+                  vary-by-developer-groups="false"
+                  downstream-caching-type="private"
+                  must-revalidate="true">
+      <vary-by-query-parameter>pageIndex</vary-by-query-parameter>
+      <vary-by-query-parameter>pageSize</vary-by-query-parameter>
+      <vary-by-query-parameter>BrandId</vary-by-query-parameter>
+      <vary-by-query-parameter>TypeId</vary-by-query-parameter>
+      <vary-by-query-parameter>Sort</vary-by-query-parameter>
+      <vary-by-query-parameter>Search</vary-by-query-parameter>
+    </cache-lookup>
+
+    <!-- 6. Forward verified claims as trusted headers so the backend
+            does not need to re-parse the JWT -->
+    <set-variable name="jwt" value="@(context.Request.Headers
+                                       .GetValueOrDefault("Authorization","")
+                                       .Replace("Bearer ","").AsJwt())" />
+    <set-header name="X-User-Id" exists-action="override">
+      <value>@(((Jwt)context.Variables["jwt"])?.Subject ?? string.Empty)</value>
+    </set-header>
+    <set-header name="X-User-Roles" exists-action="override">
+      <value>@(string.Join(",",
+                  ((Jwt)context.Variables["jwt"])?.Claims
+                    .Where(c => c.Key == "role")
+                    .Select(c => c.Value)
+                  ?? Enumerable.Empty<string>()))</value>
+    </set-header>
+
+    <!-- 7. Real client IP (APIM sits behind Azure Front Door / Application Gateway) -->
+    <set-header name="X-Forwarded-For" exists-action="override">
+      <value>@(context.Request.IpAddress)</value>
+    </set-header>
+
+    <!-- 8. Strip the Authorization header — backend trusts X-User-* headers instead -->
+    <set-header name="Authorization" exists-action="delete" />
+  </inbound>
+
+  <!-- ═══════════════════════════════ BACKEND ══════════════════════════════ -->
+  <backend>
+    <!-- Retry on transient 5xx errors with exponential back-off -->
+    <retry condition="@(context.Response.StatusCode >= 500 &&
+                        context.Response.StatusCode != 501)"
+           count="3"
+           interval="2"
+           max-interval="10"
+           delta="2"
+           first-fast-retry="false">
+      <forward-request timeout="30"
+                       follow-redirects="false"
+                       buffer-request-body="true"
+                       fail-on-error-status-code="false" />
+    </retry>
+  </backend>
+
+  <!-- ════════════════════════════════ OUTBOUND ════════════════════════════ -->
+  <outbound>
+    <base />
+    <!-- Cache successful GET responses for 5 minutes -->
+    <cache-store duration="300" />
+    <!-- Append response-time header for client-side tracing -->
+    <set-header name="X-Response-Time-ms" exists-action="override">
+      <value>@(context.Elapsed.TotalMilliseconds.ToString("F0"))</value>
+    </set-header>
+  </outbound>
+
+  <!-- ════════════════════════════════ ON-ERROR ════════════════════════════ -->
+  <on-error>
+    <base />
+    <choose>
+      <when condition="@(context.LastError.Reason == "Timeout")">
+        <return-response>
+          <set-status code="504" reason="Gateway Timeout" />
+          <set-header name="Content-Type" exists-action="override">
+            <value>application/problem+json</value>
+          </set-header>
+          <set-body>@{
+            return new JObject(
+              new JProperty("type",          "https://eshopping.com/errors/timeout"),
+              new JProperty("title",         "Catalog service did not respond in time"),
+              new JProperty("status",        504),
+              new JProperty("correlationId", (string)context.Variables["correlationId"])
+            ).ToString();
+          }</set-body>
+        </return-response>
+      </when>
+    </choose>
+  </on-error>
+</policies>

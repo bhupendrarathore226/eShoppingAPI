@@ -5,6 +5,7 @@ using Basket.Application.Handlers;
 using Basket.Core.Repositories;
 using Basket.Infrastructure.Data;
 using Basket.Infrastructure.Repositories;
+using Common.Logging.Apim;
 using Common.Logging.Correlation;
 using Discount.Grpc.Protos;
 using EventBus.Messages.Common;
@@ -69,6 +70,7 @@ public class Startup
         services.AddMediatR(typeof(CreateShoppingCartCommandHandler).GetTypeInfo().Assembly);
         services.AddScoped<IBasketRepository, BasketRepository>();
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
+        services.AddApimIntegration(Configuration);
         services.AddAutoMapper(typeof(Startup));
         services.AddScoped<DiscountGrpcService>();
         services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>
@@ -137,6 +139,7 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseRouting();
         app.UseCors("CorsPolicy");
+        app.UseApimIntegration();   // ForwardedHeaders + subnet guard + correlationId + APIM identity
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>

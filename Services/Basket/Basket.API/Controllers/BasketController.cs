@@ -4,6 +4,7 @@ using Basket.Application.Mappers;
 using Basket.Application.Queries;
 using Basket.Application.Responses;
 using Basket.Core.Entities;
+using Common.Logging.Apim;
 using Common.Logging.Correlation;
 using EventBus.Messages.Events;
 using MassTransit;
@@ -18,14 +19,20 @@ public class BasketController : ApiController
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<BasketController> _logger;
     private readonly ICorrelationIdGenerator _correlationIdGenerator;
+    private readonly IApimRequestContext _apimContext;
 
-    public BasketController(IMediator mediator, IPublishEndpoint publishEndpoint, ILogger<BasketController> logger,
-        ICorrelationIdGenerator correlationIdGenerator)
+    public BasketController(
+        IMediator mediator,
+        IPublishEndpoint publishEndpoint,
+        ILogger<BasketController> logger,
+        ICorrelationIdGenerator correlationIdGenerator,
+        IApimRequestContext apimContext)
     {
         _mediator = mediator;
         _publishEndpoint = publishEndpoint;
         _logger = logger;
         _correlationIdGenerator = correlationIdGenerator;
+        _apimContext = apimContext;
         _logger.LogInformation("CorrelationId {correlationId}:", _correlationIdGenerator.Get());
     }
     
