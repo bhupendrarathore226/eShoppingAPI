@@ -46,6 +46,19 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ordering.Infrastructure", "Services\Ordering\Ordering.Infrastructure\Ordering.Infrastructure.csproj", "{9C6E8B0E-71B1-4213-BC1C-EE673B85779C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{C3FFD898-F4A7-41F8-B697-B28D3D448964}"
+	ProjectSection(SolutionItems) = preProject
+		Infrastructure\ApiGateway\Policies\basket-api-policy.xml = Infrastructure\ApiGateway\Policies\basket-api-policy.xml
+		Infrastructure\ApiGateway\Policies\basket-v2-api-policy.xml = Infrastructure\ApiGateway\Policies\basket-v2-api-policy.xml
+		Infrastructure\ApiGateway\Policies\catalog-api-policy.xml = Infrastructure\ApiGateway\Policies\catalog-api-policy.xml
+		Infrastructure\ApiGateway\Terraform\dev.tfvars = Infrastructure\ApiGateway\Terraform\dev.tfvars
+		Infrastructure\ApiGateway\Policies\global-policy.xml = Infrastructure\ApiGateway\Policies\global-policy.xml
+		Infrastructure\ApiGateway\Terraform\main.tf = Infrastructure\ApiGateway\Terraform\main.tf
+		Infrastructure\ApiGateway\Policies\ordering-api-policy.xml = Infrastructure\ApiGateway\Policies\ordering-api-policy.xml
+		Infrastructure\ApiGateway\Terraform\outputs.tf = Infrastructure\ApiGateway\Terraform\outputs.tf
+		Infrastructure\ApiGateway\Terraform\prod.tfvars = Infrastructure\ApiGateway\Terraform\prod.tfvars
+		Infrastructure\ApiGateway\Terraform\providers.tf = Infrastructure\ApiGateway\Terraform\providers.tf
+		Infrastructure\ApiGateway\Terraform\variables.tf = Infrastructure\ApiGateway\Terraform\variables.tf
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Messages", "Infrastructure\EventBus.Messages\EventBus.Messages.csproj", "{7D76852C-F766-4135-BDE6-CBDA14C73149}"
 EndProject
@@ -57,7 +70,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopping.Identity", "Infrastructure\EShopping.Identity\EShopping.Identity.csproj", "{5ECB295C-DA62-49E7-A1A4-CFFB046646AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swagger", "Infrastructure\Swagger\Swagger.csproj", "{8FE41F07-E328-4C9E-993A-378244E27C75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swagger", "Infrastructure\Swagger\Swagger.csproj", "{8FE41F07-E328-4C9E-993A-378244E27C75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
