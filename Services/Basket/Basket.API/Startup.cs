@@ -94,6 +94,11 @@ public class Startup
             });
         });
         services.AddMassTransitHostedService();
+        services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy",
+                policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
+        });
         //Identity Server changes
         // var userPolicy = new AuthorizationPolicyBuilder()
         //     .RequireAuthenticatedUser()

@@ -42,6 +42,11 @@ public class Startup
         services.AddScoped<IBrandRepository, ProductRepository>();
         services.AddScoped<ITypesRepository, ProductRepository>();
 
+        services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy",
+                policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
+        });
         services.AddControllers();
         //Identity Server changes
         // var userPolicy = new AuthorizationPolicyBuilder()
@@ -85,7 +90,7 @@ public class Startup
 
         app.UseHttpsRedirection();
         app.UseRouting();
-        // app.UseCors("CorsPolicy");
+        app.UseCors("CorsPolicy");
         app.UseAuthentication();
         app.UseStaticFiles();
         app.UseAuthorization();

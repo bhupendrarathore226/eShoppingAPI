@@ -59,6 +59,11 @@ public class Startup
                 });
             });
         });
+        services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy",
+                policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
+        });
         services.AddMassTransitHostedService();
     }
 

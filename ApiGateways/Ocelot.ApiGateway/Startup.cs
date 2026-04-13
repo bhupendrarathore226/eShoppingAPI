@@ -62,12 +62,12 @@ public class Startup
         {
             ocelotBuilder.AddKubernetes();
         }
-
-        services.AddSwaggerForOcelot(_configuration, opts =>
-        {
-            // Do not expose a gateway-level swagger doc; downstream docs are sufficient.
-            opts.GenerateDocsForGatewayItSelf = false;
-        });
+        services.AddSwaggerForOcelot(_configuration);
+        //services.AddSwaggerForOcelot(_configuration, opts =>
+        //{
+        //    // Do not expose a gateway-level swagger doc; downstream docs are sufficient.
+        //    opts.GenerateDocsForGatewayItSelf = false;
+        //});
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

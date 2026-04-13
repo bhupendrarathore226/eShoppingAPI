@@ -33,6 +33,7 @@ export class StoreComponent implements OnInit {
   getProducts(){
     this.storeService.getProducts(this.storeParams).subscribe({
       next: response =>{
+        console.log(response.data);
         this.products = response.data;
         this.storeParams.pageNumber = response.pageIndex;
         this.storeParams.pageSize = response.pageSize;

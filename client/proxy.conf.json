@@ -1,0 +1,8 @@
+{
+  "/Catalog": {
+    "target": "https://localhost:51341",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
