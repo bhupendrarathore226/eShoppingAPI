@@ -20,8 +20,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
- 
-
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 namespace Basket.API;
 
 public class Startup
@@ -99,6 +99,8 @@ public class Startup
             options.AddPolicy("CorsPolicy",
                 policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
         });
+        services.AddApplicationInsightsTelemetry();
+
         //Identity Server changes
         // var userPolicy = new AuthorizationPolicyBuilder()
         //     .RequireAuthenticatedUser()

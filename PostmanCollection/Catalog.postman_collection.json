@@ -22,8 +22,8 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:9000/api/v1/Catalog/GetAllProducts/",
-					"protocol": "http",
+					"raw": "https://localhost:51334/api/v1/Catalog/GetAllProducts/",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],

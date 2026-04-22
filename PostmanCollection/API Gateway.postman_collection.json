@@ -15,8 +15,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Catalog/GetProductsByBrandName/Adidas",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Catalog/GetProductsByBrandName/Adidas",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -39,8 +39,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Catalog/GetAllProducts",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Catalog/GetAllProducts",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -171,8 +171,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Catalog/GetAllBrands",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Catalog/GetAllBrands",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -194,8 +194,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Catalog/GetAllTypes",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Catalog/GetAllTypes",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -217,8 +217,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Catalog/GetProductById/602d2149e773f2a3990b47f5",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Catalog/GetProductById/602d2149e773f2a3990b47f5",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -238,8 +238,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Basket/GetBasket/rahul",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Basket/GetBasket/rahul",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -259,8 +259,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9010/Order/rahul",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Order/rahul",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -298,8 +298,8 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9010/Basket/CreateBasket",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Basket/CreateBasket",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -340,8 +340,8 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9010/Basket/GetBasket/rahul",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Basket/GetBasket/rahul",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -370,8 +370,8 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9010/Basket/DeleteBasket/rahul",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Basket/DeleteBasket/rahul",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -400,8 +400,8 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9010/Basket/Checkout",
-					"protocol": "http",
+					"raw": "https://localhost:51341/Basket/Checkout",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],

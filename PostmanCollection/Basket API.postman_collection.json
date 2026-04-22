@@ -24,12 +24,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9001/api/v1/Basket/CreateBasket",
-					"protocol": "http",
+					"raw": "https://localhost:51338/api/v1/Basket/CreateBasket",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "9001",
+					"port": "51338",
 					"path": [
 						"api",
 						"v1",
@@ -49,12 +49,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9001/api/v1/Basket/GetBasket/rahul",
-					"protocol": "http",
+					"raw": "https://localhost:51338/api/v1/Basket/GetBasket/rahul",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "9001",
+					"port": "51338",
 					"path": [
 						"api",
 						"v1",
@@ -81,12 +81,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9001/api/v1/Basket/Checkout",
-					"protocol": "http",
+					"raw": "https://localhost:51338/api/v1/Basket/Checkout",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "9001",
+					"port": "51338",
 					"path": [
 						"api",
 						"v1",
@@ -112,12 +112,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9001/api/v2/Basket/Checkout",
-					"protocol": "http",
+					"raw": "https://localhost:51338/api/v2/Basket/Checkout",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "9001",
+					"port": "51338",
 					"path": [
 						"api",
 						"v2",
