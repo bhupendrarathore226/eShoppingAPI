@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Catalog.API;
 
@@ -30,12 +32,12 @@ public class Startup
         services.AddDbContext<CatalogContext>(options =>
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         services.AddHealthChecks()
-            .AddMySql(connectionString, "Catalog MySQL Health Check", HealthStatus.Degraded);
+            .AddMySql(connectionString!);
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Catalog.API", Version = "v1"}); });
         
         //DI
         services.AddAutoMapper(typeof(Startup));
-        services.AddMediatR(typeof(CreateProductHandler).GetTypeInfo().Assembly);
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateProductHandler).Assembly));
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
         services.AddScoped<ICatalogContext>(provider => provider.GetRequiredService<CatalogContext>());
         services.AddScoped<IProductRepository, ProductRepository>();
@@ -47,6 +49,7 @@ public class Startup
             options.AddPolicy("CorsPolicy",
                 policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
         });
+        services.AddApplicationInsightsTelemetry();
         services.AddControllers();
         //Identity Server changes
         // var userPolicy = new AuthorizationPolicyBuilder()

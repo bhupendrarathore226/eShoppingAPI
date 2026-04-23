@@ -8,7 +8,6 @@ using Basket.Infrastructure.Repositories;
 using Common.Logging.Correlation;
 using Discount.Grpc.Protos;
 using EventBus.Messages.Common;
-using GreenPipes;
 using HealthChecks.UI.Client;
 using MassTransit;
 using MediatR;
@@ -66,7 +65,7 @@ public class Startup
         var connectionString = Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
         services.AddDbContext<BasketContext>(options =>
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-        services.AddMediatR(typeof(CreateShoppingCartCommandHandler).GetTypeInfo().Assembly);
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateShoppingCartCommandHandler).Assembly));
         services.AddScoped<IBasketRepository, BasketRepository>();
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
         services.AddAutoMapper(typeof(Startup));
@@ -80,7 +79,7 @@ public class Startup
             options.OperationFilter<SwaggerDefaultValues>();
         });
         services.AddHealthChecks()
-            .AddMySql(connectionString, "Basket MySQL Health Check", HealthStatus.Degraded);
+            .AddMySql(connectionString!);
         var eventBusSettings = Configuration.GetSection("EventBusSettings").Get<EventBusSettings>();
         services.AddMassTransit(config =>
         {
@@ -93,7 +92,6 @@ public class Startup
                 });
             });
         });
-        services.AddMassTransitHostedService();
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy",

@@ -1,7 +1,8 @@
 using EventBus.Messages.Common;
-using GreenPipes;
 using HealthChecks.UI.Client;
 using MassTransit;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Ordering.API.EventBusConsumer;
@@ -34,6 +35,7 @@ public class Startup
             c.SwaggerDoc("v1", new OpenApiInfo {Title = "Ordering.API", Version = "v1"});
         });
         services.AddHealthChecks().Services.AddDbContext<OrderContext>();
+        services.AddApplicationInsightsTelemetry();
         var eventBusSettings = Configuration.GetSection("EventBusSettings").Get<EventBusSettings>();
         services.AddMassTransit(config =>
         {
@@ -64,7 +66,6 @@ public class Startup
             options.AddPolicy("CorsPolicy",
                 policy => { policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin(); });
         });
-        services.AddMassTransitHostedService();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
