@@ -64,7 +64,7 @@ public class Startup
         //MySQL Settings
         var connectionString = Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
         services.AddDbContext<BasketContext>(options =>
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+            options.UseMySql(connectionString ?? "", new MySqlServerVersion(new Version(8, 0, 0))));
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateShoppingCartCommandHandler).Assembly));
         services.AddScoped<IBasketRepository, BasketRepository>();
         services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();

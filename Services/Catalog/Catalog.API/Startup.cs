@@ -30,7 +30,7 @@ public class Startup
         services.AddApiVersioning();
         var connectionString = Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
         services.AddDbContext<CatalogContext>(options =>
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+            options.UseMySql(connectionString ?? "", new MySqlServerVersion(new Version(8, 0, 0))));
         services.AddHealthChecks()
             .AddMySql(connectionString!);
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Catalog.API", Version = "v1"}); });
