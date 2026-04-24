@@ -45,6 +45,8 @@ jobs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
     - name: Generate Open API Specification Document
       run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+      env:
+        DatabaseSettings__ConnectionString: "Server=localhost;Database=CatalogDb;Uid=root;Pwd=password;"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v4
       with:

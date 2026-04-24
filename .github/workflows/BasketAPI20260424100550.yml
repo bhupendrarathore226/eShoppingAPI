@@ -45,6 +45,10 @@ jobs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
     - name: Generate Open API Specification Document
       run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+      env:
+        DatabaseSettings__ConnectionString: "Server=localhost;Database=BasketDb;Uid=root;Pwd=password;"
+        GrpcSettings__DiscountUrl: "http://localhost:8001"
+        EventBusSettings__HostAddress: "amqp://guest:guest@localhost:5672"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v4
       with:
