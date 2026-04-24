@@ -1,0 +1,585 @@
+================================================================================
+  ESHOPPING API — AZURE CI/CD DEPLOYMENT PLAN
+  Date: April 23, 2026
+================================================================================
+
+================================================================================
+PART A — ONE-TIME AZURE SETUP (Portal Clicks)
+================================================================================
+
+A1 — Create Resource Group
+---------------------------
+1. Go to https://portal.azure.com
+2. Search bar → type "Resource groups" → click it
+3. Click + Create
+4. Fill:
+   - Subscription: your subscription
+   - Resource group: eshopping-dev-rg
+   - Region: East US
+5. Click Review + create → Create
+
+--------------------------------------------------------------------------------
+
+A2 — Create Azure App Service Plan (shared by all services)
+------------------------------------------------------------
+1. Search → "App Service plans" → click it
+2. Click + Create
+3. Fill:
+   - Resource group: eshopping-dev-rg
+   - Name: eshopping-plan-b1
+   - OS: Linux
+   - Region: East US
+   - Pricing tier: click "Explore pricing plans" → Basic B1 → Select
+4. Review + create → Create
+
+--------------------------------------------------------------------------------
+
+A3 — Create 6 App Services (one per microservice)
+--------------------------------------------------
+Repeat these steps 6 times using the table below:
+
+1. Search → "App Services" → + Create → Web App
+2. Fill:
+   - Resource group: eshopping-dev-rg
+   - Name: (from table)
+   - Publish: Code
+   - Runtime stack: .NET 8 (LTS)
+   - OS: Linux
+   - Region: East US
+   - Linux Plan: eshopping-plan-b1
+3. Click Review + create → Create
+
+App Services to create:
+  1. eshopping-catalog-dev   → Catalog.API
+  2. eshopping-basket-dev    → Basket.API
+  3. eshopping-discount-dev  → Discount.API
+  4. eshopping-ordering-dev  → Ordering.API
+  5. eshopping-identity-dev  → EShopping.Identity
+  6. eshopping-gateway-dev   → Ocelot.ApiGateway
+
+--------------------------------------------------------------------------------
+
+A4 — Create Azure Database for MySQL
+--------------------------------------
+1. Search → "Azure Database for MySQL flexible servers" → + Create → Flexible server
+2. Fill:
+   - Resource group: eshopping-dev-rg
+   - Server name: eshopping-mysql-dev  (must be globally unique)
+   - Region: East US
+   - MySQL version: 8.0
+   - Workload type: For development or hobby projects
+   - Click Configure server → Burstable → B1ms → Save
+   - Admin username: mysqladmin
+   - Password: (strong password, save it)
+3. Click Next: Networking:
+   - Connectivity: Public access
+   - Check: Allow public access from any Azure service within Azure
+4. Review + create → Create  (~5 min)
+
+After creation — create 4 databases:
+1. Open MySQL resource → left menu → Databases
+2. Click + Add → Name: CatalogDb → Save
+3. Repeat for: BasketDb, DiscountDb, OrderDb
+
+--------------------------------------------------------------------------------
+
+A5 — Create Azure Service Bus
+------------------------------
+1. Search → "Service Bus" → + Create
+2. Fill:
+   - Resource group: eshopping-dev-rg
+   - Namespace: eshopping-servicebus-dev
+   - Location: East US
+   - Pricing tier: Standard  (Basic doesn't support Topics — MassTransit needs them)
+3. Review + create → Create
+
+After creation — get connection string:
+1. Open Service Bus resource
+2. Left menu → Shared access policies → click RootManageSharedAccessKey
+3. Copy Primary Connection String — save it
+
+--------------------------------------------------------------------------------
+
+A6 — Create Application Insights
+----------------------------------
+1. Search → "Application Insights" → + Create
+2. Fill:
+   - Resource group: eshopping-dev-rg
+   - Name: eshopping-insights-dev
+   - Region: East US
+3. Create → open resource
+4. Copy Connection String (top of Overview page) — save it
+
+--------------------------------------------------------------------------------
+
+A7 — Set App Settings on each App Service
+------------------------------------------
+For every App Service created in A3:
+1. Open the App Service → left menu → Configuration → Application settings tab
+2. Click + New application setting for each value below
+3. Click Save → Continue after all are added
+
+eshopping-catalog-dev:
+  ASPNETCORE_ENVIRONMENT                = Production
+  DatabaseSettings__ConnectionString    = Server=eshopping-mysql-dev.mysql.database.azure.com;Port=3306;Database=CatalogDb;User=mysqladmin;Password=YOUR_PASS;SslMode=Required;
+  APPLICATIONINSIGHTS_CONNECTION_STRING = <paste from A6>
+
+eshopping-basket-dev:
+  ASPNETCORE_ENVIRONMENT                = Production
+  DatabaseSettings__ConnectionString    = Server=eshopping-mysql-dev.mysql.database.azure.com;Port=3306;Database=BasketDb;User=mysqladmin;Password=YOUR_PASS;SslMode=Required;
+  EventBusSettings__ServiceBusConnection= <paste from A5>
+  GrpcSettings__DiscountUrl             = https://eshopping-discount-dev.azurewebsites.net
+  APPLICATIONINSIGHTS_CONNECTION_STRING = <paste from A6>
+
+eshopping-discount-dev:
+  ASPNETCORE_ENVIRONMENT                = Production
+  DatabaseSettings__ConnectionString    = Server=eshopping-mysql-dev.mysql.database.azure.com;Port=3306;Database=DiscountDb;User=mysqladmin;Password=YOUR_PASS;SslMode=Required;
+  APPLICATIONINSIGHTS_CONNECTION_STRING = <paste from A6>
+
+eshopping-ordering-dev:
+  ASPNETCORE_ENVIRONMENT                      = Production
+  ConnectionStrings__OrderingConnectionString = Server=eshopping-mysql-dev.mysql.database.azure.com;Port=3306;Database=OrderDb;User=mysqladmin;Password=YOUR_PASS;SslMode=Required;
+  EventBusSettings__ServiceBusConnection      = <paste from A5>
+  APPLICATIONINSIGHTS_CONNECTION_STRING       = <paste from A6>
+
+eshopping-gateway-dev:
+  ASPNETCORE_ENVIRONMENT                = Production
+  IdentityServer__Authority             = https://eshopping-identity-dev.azurewebsites.net
+  APPLICATIONINSIGHTS_CONNECTION_STRING = <paste from A6>
+
+eshopping-identity-dev:
+  ASPNETCORE_ENVIRONMENT                = Production
+  APPLICATIONINSIGHTS_CONNECTION_STRING = <paste from A6>
+
+================================================================================
+PART B — AZURE DEVOPS SETUP (One-time)
+================================================================================
+
+B1 — Create Azure DevOps Organization & Project
+-------------------------------------------------
+1. Go to https://dev.azure.com
+2. Sign in with your Microsoft account
+3. Click + New organization (or use existing)
+4. Click + New project:
+   - Name: eShoppingAPI
+   - Visibility: Private
+5. Create
+
+--------------------------------------------------------------------------------
+
+B2 — Connect GitHub repo to Azure DevOps
+------------------------------------------
+1. In Azure DevOps → Project Settings (bottom-left gear icon)
+2. Left menu → Pipelines → Service connections
+3. Click + New service connection → GitHub
+4. Choose OAuth → Authorize AzureDevOps
+5. Name: github-eshopping → Save
+
+--------------------------------------------------------------------------------
+
+B3 — Create Azure Resource Manager Service Connection
+------------------------------------------------------
+1. Still in Service connections → + New service connection
+2. Choose Azure Resource Manager
+3. Choose Service principal (automatic)
+4. Fill:
+   - Scope level: Subscription
+   - Subscription: select yours
+   - Resource group: eshopping-dev-rg
+   - Service connection name: azure-eshopping-dev
+5. Check: Grant access permission to all pipelines
+6. Save
+
+================================================================================
+PART C — CODE CHANGES IN THE PROJECT
+================================================================================
+
+C1 — EventBusSettings.cs
+  File: Infrastructure/EventBus.Messages/Common/EventBusSettings.cs
+  Change:
+    Add ServiceBusConnection property alongside existing HostAddress.
+
+  BEFORE:
+    public class EventBusSettings
+    {
+        public string HostAddress { get; set; } = "amqp://guest:guest@localhost:5672";
+    }
+
+  AFTER:
+    public class EventBusSettings
+    {
+        public string HostAddress { get; set; } = string.Empty;           // RabbitMQ (unused)
+        public string ServiceBusConnection { get; set; } = string.Empty;  // Azure Service Bus
+    }
+
+--------------------------------------------------------------------------------
+
+C2 — Basket.API.csproj
+  File: Services/Basket/Basket.API/Basket.API.csproj
+  Remove:  <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+  Add:     <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.3.6" />
+
+--------------------------------------------------------------------------------
+
+C3 — Ordering.API.csproj
+  File: Services/Ordering/Ordering.API/Ordering.API.csproj
+  Same swap as C2.
+
+--------------------------------------------------------------------------------
+
+C4 — Basket.API/Startup.cs
+  File: Services/Basket/Basket.API/Startup.cs
+  Replace UsingRabbitMq block:
+
+  BEFORE:
+    config.UsingRabbitMq((ct, cfg) =>
+    {
+        cfg.Host(eventBusSettings!.HostAddress);
+        cfg.UseMessageRetry(retryConfig =>
+        {
+            retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+        });
+    });
+
+  AFTER:
+    config.UsingAzureServiceBus((ct, cfg) =>
+    {
+        cfg.Host(eventBusSettings!.ServiceBusConnection);
+        cfg.UseMessageRetry(retryConfig =>
+        {
+            retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+        });
+    });
+
+--------------------------------------------------------------------------------
+
+C5 — Ordering.API/Startup.cs
+  File: Services/Ordering/Ordering.API/Startup.cs
+  Replace UsingRabbitMq block:
+
+  BEFORE:
+    config.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host(eventBusSettings!.HostAddress);
+        ...receive endpoints...
+    });
+
+  AFTER:
+    config.UsingAzureServiceBus((ctx, cfg) =>
+    {
+        cfg.Host(eventBusSettings!.ServiceBusConnection);
+        cfg.UseMessageRetry(retryConfig =>
+        {
+            retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+        });
+        cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueue, c =>
+        {
+            c.ConfigureConsumer<BasketOrderingConsumer>(ctx);
+        });
+        cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueueV2, c =>
+        {
+            c.ConfigureConsumer<BasketOrderingConsumerV2>(ctx);
+        });
+    });
+
+--------------------------------------------------------------------------------
+
+C6 — appsettings.Production.json files to create
+
+--- Services/Catalog/Catalog.API/appsettings.Production.json ---
+{
+  "AllowedHosts": "*",
+  "DatabaseSettings": { "ConnectionString": "" },
+  "ApplicationInsights": { "ConnectionString": "" }
+}
+
+--- Services/Basket/Basket.API/appsettings.Production.json ---
+{
+  "AllowedHosts": "*",
+  "DatabaseSettings": { "ConnectionString": "" },
+  "EventBusSettings": { "ServiceBusConnection": "" },
+  "GrpcSettings": { "DiscountUrl": "https://eshopping-discount-dev.azurewebsites.net" },
+  "ApplicationInsights": { "ConnectionString": "" }
+}
+
+--- Services/Discount/Discount.API/appsettings.Production.json ---
+{
+  "AllowedHosts": "*",
+  "DatabaseSettings": { "ConnectionString": "" },
+  "Kestrel": {
+    "Endpoints": {
+      "Http":  { "Url": "http://*:8080",  "Protocols": "Http2" },
+      "Https": { "Url": "https://*:443",  "Protocols": "Http1AndHttp2" }
+    }
+  },
+  "ApplicationInsights": { "ConnectionString": "" }
+}
+
+--- Services/Ordering/Ordering.API/appsettings.Production.json ---
+{
+  "AllowedHosts": "*",
+  "ConnectionStrings": { "OrderingConnectionString": "" },
+  "EventBusSettings": { "ServiceBusConnection": "" },
+  "ApplicationInsights": { "ConnectionString": "" }
+}
+
+NOTE: Connection strings are intentionally empty in these files.
+      Real values are injected via Azure App Service Application Settings (Part A7).
+      Never commit secrets to git.
+
+================================================================================
+PART D — AZURE DEVOPS PIPELINE FILES
+================================================================================
+
+Folder structure to create in repo:
+  .azuredevops/
+    templates/
+      build-publish.yml
+      deploy-appservice.yml
+    pipelines/
+      catalog-pipeline.yml
+      basket-pipeline.yml
+      discount-pipeline.yml
+      ordering-pipeline.yml
+      identity-pipeline.yml
+      gateway-pipeline.yml
+
+--------------------------------------------------------------------------------
+
+D1 — .azuredevops/templates/build-publish.yml
+----------------------------------------------
+parameters:
+  - name: projectPath
+    type: string
+  - name: artifactName
+    type: string
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8'
+    inputs:
+      packageType: sdk
+      version: '8.0.x'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore'
+    inputs:
+      command: restore
+      projects: '${{ parameters.projectPath }}'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: build
+      projects: '${{ parameters.projectPath }}'
+      arguments: '--configuration Release --no-restore'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish'
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: '${{ parameters.projectPath }}'
+      arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
+      zipAfterPublish: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Upload Artifact'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
+      ArtifactName: '${{ parameters.artifactName }}'
+
+--------------------------------------------------------------------------------
+
+D2 — .azuredevops/templates/deploy-appservice.yml
+---------------------------------------------------
+parameters:
+  - name: artifactName
+    type: string
+  - name: appServiceName
+    type: string
+  - name: azureSubscription
+    type: string
+
+steps:
+  - task: DownloadBuildArtifacts@1
+    displayName: 'Download Artifact'
+    inputs:
+      buildType: current
+      artifactName: '${{ parameters.artifactName }}'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy to App Service'
+    inputs:
+      ConnectionType: AzureRM
+      azureSubscription: '${{ parameters.azureSubscription }}'
+      appType: webAppLinux
+      WebAppName: '${{ parameters.appServiceName }}'
+      packageForLinux: '$(System.ArtifactsDirectory)/${{ parameters.artifactName }}/*.zip'
+      RuntimeStack: 'DOTNETCORE|8.0'
+
+--------------------------------------------------------------------------------
+
+D3 — Per-service pipeline reference table
+
+  Pipeline file           | projectPath                                              | artifactName  | appServiceName            | paths trigger
+  catalog-pipeline.yml    | Services/Catalog/Catalog.API/Catalog.API.csproj          | catalog-api   | eshopping-catalog-dev     | Services/Catalog/**
+  basket-pipeline.yml     | Services/Basket/Basket.API/Basket.API.csproj             | basket-api    | eshopping-basket-dev      | Services/Basket/**
+  discount-pipeline.yml   | Services/Discount/Discount.API/Discount.API.csproj       | discount-api  | eshopping-discount-dev    | Services/Discount/**
+  ordering-pipeline.yml   | Services/Ordering/Ordering.API/Ordering.API.csproj       | ordering-api  | eshopping-ordering-dev    | Services/Ordering/**
+  identity-pipeline.yml   | Infrastructure/EShopping.Identity/EShopping.Identity.csproj | identity   | eshopping-identity-dev    | Infrastructure/EShopping.Identity/**
+  gateway-pipeline.yml    | ApiGateways/Ocelot.ApiGateway/Ocelot.ApiGateway.csproj   | gateway       | eshopping-gateway-dev     | ApiGateways/**
+
+--------------------------------------------------------------------------------
+
+D4 — Example pipeline (catalog-pipeline.yml — same structure for all 6)
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - Services/Catalog/**
+      - Infrastructure/Common.Logging/**
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  artifactName: catalog-api
+  appServiceName: eshopping-catalog-dev
+  azureSubscription: azure-eshopping-dev
+
+stages:
+  - stage: Build
+    displayName: Build Catalog API
+    jobs:
+      - job: BuildJob
+        steps:
+          - template: ../templates/build-publish.yml
+            parameters:
+              projectPath: 'Services/Catalog/Catalog.API/Catalog.API.csproj'
+              artifactName: $(artifactName)
+
+  - stage: Deploy
+    displayName: Deploy Catalog API
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ../templates/deploy-appservice.yml
+                  parameters:
+                    artifactName: $(artifactName)
+                    appServiceName: $(appServiceName)
+                    azureSubscription: $(azureSubscription)
+
+================================================================================
+PART E — REGISTER PIPELINES IN AZURE DEVOPS
+================================================================================
+
+Do this once per pipeline file (6 times total):
+
+1. In Azure DevOps → left menu → Pipelines → + New pipeline
+2. Choose GitHub
+3. Select repository: eShoppingAPI
+4. Choose: Existing Azure Pipelines YAML file
+5. Branch: main
+6. Path: .azuredevops/pipelines/catalog-pipeline.yml
+7. Click Continue → Run
+
+Repeat for all 6 pipeline files:
+  .azuredevops/pipelines/basket-pipeline.yml
+  .azuredevops/pipelines/discount-pipeline.yml
+  .azuredevops/pipelines/ordering-pipeline.yml
+  .azuredevops/pipelines/identity-pipeline.yml
+  .azuredevops/pipelines/gateway-pipeline.yml
+
+================================================================================
+PART F — EF CORE MIGRATIONS (run once against Azure MySQL)
+================================================================================
+
+Run from Visual Studio → Tools → NuGet → Package Manager Console:
+
+  Update-Database -Project Catalog.Infrastructure -StartupProject Catalog.API
+  Update-Database -Project Basket.Infrastructure  -StartupProject Basket.API
+  Update-Database -Project Ordering.Infrastructure -StartupProject Ordering.API
+
+NOTE: Set the connection string to point to Azure MySQL before running.
+      Discount uses Dapper — run its schema SQL manually in MySQL Workbench.
+
+================================================================================
+PART G — TESTING THE FULL PIPELINE
+================================================================================
+
+1. Make a small change in Services/Catalog/** → commit → push to main
+2. In Azure DevOps → Pipelines → watch catalog-pipeline trigger automatically
+3. Watch Build stage → then Deploy stage complete
+4. After deploy → open: https://eshopping-catalog-dev.azurewebsites.net/swagger
+5. Test: GET /api/v1/Catalog/GetAllProducts
+6. Check Application Insights → Live Metrics → see real-time requests
+
+Basket → Service Bus → Ordering flow test:
+1. Open Basket Swagger: https://eshopping-basket-dev.azurewebsites.net/swagger
+2. POST /api/v1/Basket/Checkout with a checkout payload
+3. Azure Portal → Service Bus → Queues → basket-checkout-queue
+   → verify message count increases briefly then drops (Ordering consumed it)
+4. Ordering Swagger: GET /api/v1/Order/GetOrdersForUser/{username}
+   → new order appears
+
+================================================================================
+FULL REQUEST FLOW
+================================================================================
+
+  Client / Browser
+       |
+       v
+  Azure APIM (Consumption tier — optional, rate limiting, subscription keys)
+       |
+       v
+  Ocelot API Gateway  https://eshopping-gateway-dev.azurewebsites.net
+  (reads ocelot.Production.json — routes to internal App Service URLs)
+       |
+  +---------+-----------+-----------+
+  v         v           v           v
+Catalog   Basket     Discount    Ordering
+  |         |  gRPC      |           |
+  |         +----------->+           |
+  |         |                        |
+  v         v                        v
+CatalogDb BasketDb           Azure Service Bus
+(MySQL)   (MySQL)            basket-checkout-queue
+                                     |
+                             DiscountDb(MySQL)     OrderDb (MySQL)
+                                     |
+                             Ordering.API consumer
+                                     |
+                             Application Insights
+                             (all services stream telemetry here)
+
+================================================================================
+SUMMARY — WHAT GETS IMPLEMENTED
+================================================================================
+
+  PART A  → Azure resources (portal clicks)
+  PART B  → Azure DevOps project + service connections
+  PART C  → Code changes:
+               - EventBusSettings.cs           (add ServiceBusConnection)
+               - Basket.API.csproj             (swap RabbitMQ -> AzureServiceBus)
+               - Ordering.API.csproj           (same)
+               - Basket Startup.cs             (UsingAzureServiceBus)
+               - Ordering Startup.cs           (UsingAzureServiceBus)
+               - 4x appsettings.Production.json
+  PART D  → 8 pipeline YAML files created in .azuredevops/
+  PART E  → Register pipelines in Azure DevOps portal
+  PART F  → Run EF migrations against Azure MySQL
+  PART G  → End-to-end test
+
+================================================================================
+END OF PLAN
+================================================================================
