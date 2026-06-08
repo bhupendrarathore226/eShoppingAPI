@@ -1,24 +1,26 @@
-<div class="container mt-5">
-  <div class="row" *ngIf="product">
-    <div class="col-6">
-      <img src="{{product.imageFile}}" alt="{{product.name}}" class="img-fluid w-100">
-      <h1>{{ product.name }}</h1>
-    </div>
-    <div class="col-6">
-        <h3>{{ product.name }}</h3>
-        <p style="font-size: 2em;">{{ product.price | currency: "INR"}}</p>
-        <div class="d-flex justify-content-start align-items-center">
-            <i (click)="decrementQuantity()" class="fa fa-minus-circle text-warning mr-2" style="cursor: pointer; font-size: 2em;"></i>
-            <span class="font-weight-bold" style="font-size: 1.5em;">{{quantity}}</span>
-            <i (click)="incrementQuantity()" class="fa fa-plus-circle text-warning mx-2" style="cursor: pointer; font-size: 2em;"></i>
-            <button (click)="addItemToCart()" class="btn btn-outline-primary btn-lg ml-4">Add to Cart</button>
+<div class="container">
+  <div class="product-detail" *ngIf="product">
+    <div class="row g-5 align-items-start">
+      <div class="col-md-6">
+        <div class="product-detail__image-wrap">
+          <img [src]="product.imageFile" [alt]="product.name" class="product-detail__img" />
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12 ml-3">
-            <h4>Description</h4>
-            <p>{{product.description}}</p>
+      </div>
+      <div class="col-md-6 product-detail__info">
+        <span class="product-detail__eyebrow">Premium Collection</span>
+        <h1 class="product-detail__title">{{ product.name }}</h1>
+        <p class="product-detail__price">{{ product.price | currency:'INR' }}</p>
+        <div class="product-detail__divider"></div>
+        <p class="product-detail__description">{{ product.description }}</p>
+        <div class="product-detail__qty-row">
+          <i (click)="decrementQuantity()" class="fa fa-minus-circle product-detail__qty-btn"></i>
+          <span class="product-detail__qty-value">{{ quantity }}</span>
+          <i (click)="incrementQuantity()" class="fa fa-plus-circle product-detail__qty-btn"></i>
         </div>
+        <button (click)="addItemToCart()" class="btn-luxury product-detail__add-btn">
+          <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
+        </button>
+      </div>
     </div>
   </div>
 </div>

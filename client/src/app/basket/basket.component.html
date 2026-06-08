@@ -1,84 +1,60 @@
-<div class="container mt-2">
-  <div *ngIf="(basketService.basketSource$ | async) === null" >
-      <p> There are no items in your basket! Please add!</p>
+<div class="container basket-page">
+  <div *ngIf="(basketService.basketSource$ | async) === null">
+    <div class="basket-empty">
+      <i class="fa fa-shopping-cart fa-3x"></i>
+      <p>Your basket is empty</p>
+      <a routerLink="/store" class="btn-luxury">Continue Shopping</a>
+    </div>
   </div>
   <ng-container *ngIf="(basketService.basketSource$ | async) as basket">
-      <div class="container">
-         <div class="row">
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th class="border-0 bg-light" scope="col">
-                      <div class="p-2 px-3 text-uppercase">
-                        Product
-                      </div>
-                    </th>
-                    <th class="border-0 bg-light" scope="col">
-                      <div class="p-2 text-uppercase">
-                        Price
-                      </div>
-                    </th>
-                    <th class="border-0 bg-light" scope="col">
-                      <div class="p-2 text-uppercase">
-                        Quantity
-                      </div>
-                    </th>
-                    <th class="border-0 bg-light" scope="col">
-                      <div class="p-2 text-uppercase">
-                        Total
-                      </div>
-                    </th>
-                    <th class="border-0 bg-light" scope="col">
-                      <div class="p-2 text-uppercase">
-                        Remove
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of basket.items">
-                    <th scope="row">
-                      <div class="p-2">
-                        <img src="{{item.imageFile}}" alt="{{item.productName}}" class="img-fluid" style="max-height:50px">
-                        <div class="ml-3 d-inline-block align-middle">
-                          <h5 class="mb-0">
-                            <a routerLink="/store/{{item.productId}}" class="text-dark">{{item.productName}}</a>
-                          </h5>
-                        </div>
-                      </div>
-                    </th>
-                    <td class="align-middle"><strong>{{item.price | currency:'INR'}}</strong></td>
-                    <td class="align-middle">
-                      <div class="d-flex align-items-center">
-                          <i (click)="decrementItem(item)" class="fa fa-minus-circle text-warning mr-2" style="cursor: pointer; font-size: 2em;"></i>
-                          <span class="font-weight-bold" style="font-size: 1.5em;">{{item.quantity}}</span>
-                          <i (click)="incrementItem(item)" class="fa fa-plus-circle text-warning mx-2" style="cursor: pointer; font-size: 2em;"></i>
-                      </div>
-                  </td>
-                  <td class="align-middle">
-                    <strong>{{item.price * item.quantity | currency: 'INR'}}</strong>
+    <div class="container">
+      <div class="row">
+        <div class="table-responsive">
+          <table class="luxury-table">
+            <thead>
+              <tr class="luxury-table__head">
+                <th scope="col"><div class="luxury-table__th">Product</div></th>
+                <th scope="col"><div class="luxury-table__th">Price</div></th>
+                <th scope="col"><div class="luxury-table__th">Quantity</div></th>
+                <th scope="col"><div class="luxury-table__th">Total</div></th>
+                <th scope="col"><div class="luxury-table__th">Remove</div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of basket.items" class="luxury-table__row">
+                <th scope="row">
+                  <div class="p-2 d-flex align-items-center">
+                    <img src="{{item.imageFile}}" alt="{{item.productName}}" style="max-height:56px; border-radius:var(--radius-sm); object-fit:cover;">
+                    <div class="ml-3">
+                      <a routerLink="/store/{{item.productId}}" style="color:var(--text-main); text-decoration:none; font-weight:500;">{{item.productName}}</a>
+                    </div>
+                  </div>
+                </th>
+                <td><strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem;">{{item.price | currency:'INR'}}</strong></td>
+                <td>
+                  <div class="d-flex align-items-center" style="gap:0.6rem;">
+                    <i (click)="decrementItem(item)" class="fa fa-minus-circle qty-icon"></i>
+                    <span style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:700; min-width:1.5rem; text-align:center;">{{item.quantity}}</span>
+                    <i (click)="incrementItem(item)" class="fa fa-plus-circle qty-icon"></i>
+                  </div>
                 </td>
-                <td class="align-middle text-center">
-                    <a class="text-danger">
-                        <i (click)="removeBasketItem(item)" class="fa fa-trash" aria-hidden="true" style="cursor: pointer; font-size: 2em;"></i>
-
-                    </a>
+                <td><strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem;">{{item.price * item.quantity | currency:'INR'}}</strong></td>
+                <td class="text-center">
+                  <i (click)="removeBasketItem(item)" class="fa fa-trash remove-icon" aria-hidden="true"></i>
                 </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-6 offset-6">
-              <app-order-summary></app-order-summary>
-              <a routerLink="/checkout" class="btn btn-outline-primary py-2 btn-block">
-                checkout Please!!!
-              </a>
-            </div>
-          </div>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
+      </div>
+      <div class="row">
+        <div class="col-6 offset-6">
+          <app-order-summary></app-order-summary>
+          <a routerLink="/checkout" class="btn-luxury d-block text-center py-3" style="border-radius:var(--radius-md); font-size:1rem; letter-spacing:0.06em;">
+            Proceed to Checkout &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
   </ng-container>
 </div>

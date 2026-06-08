@@ -1,15 +1,154 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --gold:        #C9A227;
+  --gold-light:  #F8E7B0;
+  --gold-dark:   #9A7A1A;
+  --charcoal:    #111827;
+  --bg:          #FAFAFA;
+  --surface:     #FFFFFF;
+  --success:     #16A34A;
+  --text-main:   #1F2937;
+  --text-muted:  #6B7280;
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   22px;
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:   0 8px 32px rgba(0,0,0,0.10);
+  --shadow-lg:   0 20px 60px rgba(0,0,0,0.15);
+  --transition:  all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Spinner ── */
+.ngx-spinner-overlay {
+  background: rgba(17, 24, 39, 0.85) !important;
+}
+.ngx-spinner-overlay h3 {
+  color: var(--gold) !important;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+/* ── Pagination ── */
+.pagination > li > a,
+.pagination > li > span {
+  border: none !important;
+  border-radius: 50% !important;
+  width: 36px;
+  height: 36px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 2px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  transition: var(--transition);
+  &:hover {
+    background: var(--gold-light) !important;
+    color: var(--charcoal) !important;
+  }
+}
+.pagination > .active > a,
+.pagination > .active > span {
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: var(--charcoal) !important;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(201,162,39,0.35);
+}
+
+/* ── Breadcrumb ── */
 .xng-breadcrumb-root {
-  padding: 8px 16px;
-  display: inline;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   border-radius: 0;
 }
-
 label.xng-breadcrumb-trail {
   margin-bottom: 0;
-  color: blue;
+  color: var(--gold);
+  font-weight: 600;
+  cursor: default;
+}
+a.xng-breadcrumb-link {
+  color: rgba(255,255,255,0.65) !important;
+  text-decoration: none !important;
+  transition: color 0.2s;
+  &:hover { color: #ffffff !important; }
+}
+.xng-breadcrumb-separator {
+  padding: 0 0.15rem;
+  color: rgba(255,255,255,0.4);
 }
 
-.xng-breadcrumb-separator {
-  padding: 0 0;
+/* ── Luxury Buttons ── */
+.btn-luxury {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--charcoal);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  border: none;
+  padding: 0.6rem 1.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  &:hover {
+    background: var(--gold-dark);
+    color: var(--charcoal);
+    box-shadow: 0 4px 15px rgba(201,162,39,0.4);
+    text-decoration: none;
+  }
+}
+.btn-luxury-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  &:hover {
+    background: var(--gold);
+    color: var(--charcoal);
+    text-decoration: none;
+  }
+}
+
+/* ── Form Controls ── */
+.custom-select,
+.form-control,
+.luxury-select,
+.luxury-input {
+  border: 1.5px solid #E5E7EB !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  &:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(201,162,39,0.15) !important;
+    outline: none;
+  }
 }

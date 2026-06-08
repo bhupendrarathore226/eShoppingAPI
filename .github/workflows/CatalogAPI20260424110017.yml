@@ -47,7 +47,7 @@ jobs:
     - name: Generate Open API Specification Document
       run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
       env:
-        DatabaseSettings__ConnectionString: "Server=localhost;Database=CatalogDb;Uid=root;Pwd=password;"
+        DatabaseSettings__ConnectionString: "Server=sql5.freesqldatabase.com;Port=3306;Database=sql5824381;User=sql5824381;Password=G8HnKNYj1l;"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v4
       with:

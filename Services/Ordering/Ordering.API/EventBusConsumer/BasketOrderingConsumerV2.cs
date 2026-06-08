@@ -21,13 +21,32 @@ public class BasketOrderingConsumerV2 : IConsumer<BasketCheckoutEventV2>
 
     public async Task Consume(ConsumeContext<BasketCheckoutEventV2> context)
     {
-        using var scope =  _logger.BeginScope("Consuming Basket Checkout Event for {correlationId}",
+        using var scope = _logger.BeginScope("Consuming Basket Checkout Event V2 for {CorrelationId}",
             context.Message.CorrelationId);
-        var command = _mapper.Map<CheckoutOrderCommand>(context.Message);
-        //TODO: Need to add required address details.
-        PopulateAddressDetails(command);
-        var result = await _mediator.Send(command);
-        _logger.LogInformation($"Basket checkout event completed!!!");
+
+        if (string.IsNullOrWhiteSpace(context.Message.UserName) || context.Message.TotalPrice is null or <= 0)
+        {
+            _logger.LogError(
+                "Invalid BasketCheckoutEventV2 received — missing required fields. CorrelationId: {CorrelationId}. Discarding message.",
+                context.Message.CorrelationId);
+            return; // ACK and discard — deterministic failure, no retry
+        }
+
+        try
+        {
+            var command = _mapper.Map<CheckoutOrderCommand>(context.Message);
+            PopulateAddressDetails(command);
+            var result = await _mediator.Send(command);
+            _logger.LogInformation("Basket checkout V2 event completed for {CorrelationId}", context.Message.CorrelationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error consuming BasketCheckoutEventV2. CorrelationId: {CorrelationId}, UserName: {UserName}",
+                context.Message.CorrelationId,
+                context.Message.UserName);
+            throw;
+        }
     }
 
     private static void PopulateAddressDetails(CheckoutOrderCommand command)

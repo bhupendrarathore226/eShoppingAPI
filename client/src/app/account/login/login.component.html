@@ -1,10 +1,13 @@
-<div class="row justify-content-center">
-  <div class="col-md-8 text-center">
-      <h1 class="mt-5">{{title}}</h1>
-      <p class="lead">Login via Identity Server 4</p>
-      <img src="assets/images/open-identity.png" width="175" class="mb-4" />
-      <p>
-          <button class="btn btn-lg btn-primary" (click)="login()">Login with IdentityServer</button>
-      </p>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-card__brand">
+      <img src="assets/images/open-identity.png" width="80" alt="Identity" />
     </div>
+    <span class="login-card__eyebrow">Secure Access</span>
+    <h1 class="login-card__title">{{title}}</h1>
+    <p class="login-card__sub">Sign in via Identity Server to access your account</p>
+    <button class="btn-luxury login-card__btn" (click)="login()">
+      <i class="fa fa-lock mr-2"></i> Login with IdentityServer
+    </button>
+  </div>
 </div>

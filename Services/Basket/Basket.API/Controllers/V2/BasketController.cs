@@ -35,6 +35,9 @@ public class BasketController : ControllerBase
     [ProducesResponseType((int) HttpStatusCode.BadRequest)]
     public async Task<IActionResult> Checkout([FromBody] BasketCheckoutV2 basketCheckout)
     {
+        if (string.IsNullOrWhiteSpace(basketCheckout.UserName))
+            return BadRequest("UserName is required.");
+
         //Get existing basket with username
         var query = new GetBasketByUserNameQuery(basketCheckout.UserName);
         var basket = await _mediator.Send(query);

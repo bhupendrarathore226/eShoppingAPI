@@ -7,6 +7,7 @@ using Common.Logging;
 using Common.Logging.Correlation;
 using HealthChecks.UI.Client;
 using MediatR;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -74,8 +75,25 @@ public class Startup
         // });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
     {
+        app.UseExceptionHandler(errorApp =>
+        {
+            errorApp.Run(async context =>
+            {
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                var error = context.Features.Get<IExceptionHandlerFeature>();
+                var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
+                if (error != null)
+                    logger.LogError(error.Error, "Unhandled exception");
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    statusCode = 500,
+                    message = "An unexpected error occurred. Please try again later."
+                });
+            });
+        });
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();

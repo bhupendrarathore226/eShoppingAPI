@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Correlation;
@@ -78,6 +79,41 @@ public class Startup
         }
 
         app.AddCorrelationIdMiddleware();
+
+        // Intercept 503 responses from Ocelot (circuit breaker open / timeout)
+        // and rewrite with a structured JSON body + Retry-After header.
+        app.Use(async (context, next) =>
+        {
+            var originalBody = context.Response.Body;
+            using var buffer = new MemoryStream();
+            context.Response.Body = buffer;
+            try
+            {
+                await next();
+            }
+            finally
+            {
+                buffer.Seek(0, SeekOrigin.Begin);
+                if (context.Response.StatusCode == 503)
+                {
+                    context.Response.Body = originalBody;
+                    context.Response.ContentType = "application/json";
+                    context.Response.Headers["Retry-After"] = "10";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        statusCode = 503,
+                        message = "Service temporarily unavailable. Please retry after a few seconds.",
+                        retryAfterSeconds = 10
+                    });
+                }
+                else
+                {
+                    context.Response.Body = originalBody;
+                    await buffer.CopyToAsync(originalBody);
+                }
+            }
+        });
+
         app.UseRouting();
         app.UseCors("CorsPolicy");
         app.UseAuthentication();

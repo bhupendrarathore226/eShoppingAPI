@@ -3,6 +3,7 @@ using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Ordering.API.EventBusConsumer;
@@ -30,6 +31,8 @@ public class Startup
         services.AddAutoMapper(typeof(Startup));
         services.AddScoped<BasketOrderingConsumer>();
         services.AddScoped<BasketOrderingConsumerV2>();
+        services.AddScoped<BasketOrderingConsumerFault>();
+        services.AddScoped<BasketOrderingConsumerV2Fault>();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo {Title = "Ordering.API", Version = "v1"});
@@ -39,25 +42,58 @@ public class Startup
         var eventBusSettings = Configuration.GetSection("EventBusSettings").Get<EventBusSettings>();
         services.AddMassTransit(config =>
         {
-            //Mark this as consumer
             config.AddConsumer<BasketOrderingConsumer>();
             config.AddConsumer<BasketOrderingConsumerV2>();
+            config.AddConsumer<BasketOrderingConsumerFault>();
+            config.AddConsumer<BasketOrderingConsumerV2Fault>();
             config.UsingRabbitMq((ctx, cfg) =>
             {
                 cfg.Host(eventBusSettings!.HostAddress);
-                cfg.UseMessageRetry(retryConfig =>
+
+                cfg.UseDelayedMessageScheduler();
+
+                cfg.UseCircuitBreaker(cb =>
                 {
-                    retryConfig.Interval(3, TimeSpan.FromSeconds(5));
+                    cb.TrackingPeriod  = TimeSpan.FromMinutes(1);
+                    cb.TripThreshold   = 15;
+                    cb.ActiveThreshold = 10;
+                    cb.ResetInterval   = TimeSpan.FromMinutes(5);
                 });
-                //provide the queue name with consumer settings
+
                 cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueue, c =>
                 {
+                    c.PrefetchCount          = 8;
+                    c.ConcurrentMessageLimit = 4;
+                    c.UseDelayedRedelivery(r =>
+                        r.Intervals(
+                            TimeSpan.FromMinutes(10),
+                            TimeSpan.FromMinutes(30),
+                            TimeSpan.FromHours(1)));
+                    c.UseMessageRetry(r =>
+                        r.Exponential(5,
+                            TimeSpan.FromSeconds(1),
+                            TimeSpan.FromSeconds(60),
+                            TimeSpan.FromSeconds(5)));
                     c.ConfigureConsumer<BasketOrderingConsumer>(ctx);
+                    c.ConfigureConsumer<BasketOrderingConsumerFault>(ctx);
                 });
-                //V2 endpoint will pick items from here
+
                 cfg.ReceiveEndpoint(EventBusConstants.BasketCheckoutQueueV2, c =>
                 {
+                    c.PrefetchCount          = 8;
+                    c.ConcurrentMessageLimit = 4;
+                    c.UseDelayedRedelivery(r =>
+                        r.Intervals(
+                            TimeSpan.FromMinutes(10),
+                            TimeSpan.FromMinutes(30),
+                            TimeSpan.FromHours(1)));
+                    c.UseMessageRetry(r =>
+                        r.Exponential(5,
+                            TimeSpan.FromSeconds(1),
+                            TimeSpan.FromSeconds(60),
+                            TimeSpan.FromSeconds(5)));
                     c.ConfigureConsumer<BasketOrderingConsumerV2>(ctx);
+                    c.ConfigureConsumer<BasketOrderingConsumerV2Fault>(ctx);
                 });
             });
         });
@@ -68,8 +104,25 @@ public class Startup
         });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
     {
+        app.UseExceptionHandler(errorApp =>
+        {
+            errorApp.Run(async context =>
+            {
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                var error = context.Features.Get<IExceptionHandlerFeature>();
+                var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
+                if (error != null)
+                    logger.LogError(error.Error, "Unhandled exception");
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    statusCode = 500,
+                    message = "An unexpected error occurred. Please try again later."
+                });
+            });
+        });
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();

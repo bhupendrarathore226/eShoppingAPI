@@ -1,36 +1,88 @@
-.btn {
-  width: 30%;
-  height: 40px;
-}
-
-.image :hover {
-  opacity: 1;
-  & button {
-      transform: none;
-      opacity: 1;
-  }
-}
-
-.hover-overlay {
-  position: absolute;
-  width: 100%;
+.product-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition);
   height: 100%;
-  top: 0;
-  left: 0;
-  background: rgba(255, 255, 255, 0.5);
-  opacity: 0;
-  transition: all 0.5s;
 
-  & button {
-      z-index: 1000;
-      transition: all 0.5s;
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+
+    .product-card__overlay { opacity: 1; }
+    .product-card__img { transform: scale(1.06); }
   }
 
-  & button:first-of-type {
-      transform: translateX(-20px);
+  &__image-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: #F3F4F6;
   }
 
-  & button:last-of-type {
-      transform: translateX(20px);
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: rgba(17, 24, 39, 0.45);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: var(--transition);
+  }
+
+  &__action-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--charcoal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+
+    &:hover {
+      background: var(--gold);
+      color: var(--charcoal);
+    }
+  }
+
+  &__body {
+    padding: 1rem 1.1rem 1.2rem;
+  }
+
+  &__name {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    display: block;
   }
 }

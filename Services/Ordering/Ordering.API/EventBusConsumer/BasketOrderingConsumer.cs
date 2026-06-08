@@ -21,10 +21,21 @@ public class BasketOrderingConsumer : IConsumer<BasketCheckoutEvent>
     }
     public async Task Consume(ConsumeContext<BasketCheckoutEvent> context)
     {
-        using var scope =  _logger.BeginScope("Consuming Basket Checkout Event for {correlationId}",
+        using var scope = _logger.BeginScope("Consuming Basket Checkout Event for {CorrelationId}",
             context.Message.CorrelationId);
-        var command = _mapper.Map<CheckoutOrderCommand>(context.Message);
-        var result = await _mediator.Send(command);
-        _logger.LogInformation($"Basket checkout event completed!!!");
+        try
+        {
+            var command = _mapper.Map<CheckoutOrderCommand>(context.Message);
+            var result = await _mediator.Send(command);
+            _logger.LogInformation("Basket checkout event completed for {CorrelationId}", context.Message.CorrelationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error consuming BasketCheckoutEvent. CorrelationId: {CorrelationId}, UserName: {UserName}",
+                context.Message.CorrelationId,
+                context.Message.UserName);
+            throw;
+        }
     }
 }
