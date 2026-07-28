@@ -8,12 +8,14 @@ import { CoreModule } from './core/core.module';
 import { HomeModule } from './home/home.module';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { LoadingInterceptor } from './core/interceptors/loading.interceptor';
+import { ProductcontrolComponent } from './admin/productcontrol/productcontrol.component';
 
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ProductcontrolComponent
   ],
   imports: [
     BrowserModule,
